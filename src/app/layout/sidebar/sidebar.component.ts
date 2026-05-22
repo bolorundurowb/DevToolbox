@@ -27,6 +27,12 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
   standalone: true,
   imports: [RouterModule, IconComponent],
   styles: [`
+    :host {
+      display: block;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
     /* ── Drag regions ────────────────────────────────────────────────────────── */
     /* Belt-and-suspenders: Tauri reads the attribute AND the CSS property.      */
     [data-tauri-drag-region] {
@@ -198,6 +204,46 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
       background: var(--border);
       border-radius: 2px;
     }
+
+    /* ── Pin / unpin rows ────────────────────────────────────────────────── */
+    .pin-row {
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+    }
+    .pin-action-btn {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Always visible at low opacity; full opacity on hover/pinned */
+      opacity: 0.3;
+      color: var(--text-muted);
+      transition: opacity 0.12s, color 0.12s, background 0.12s;
+      padding: 0;
+      margin-right: 2px;
+    }
+    .pin-action-btn:hover {
+      opacity: 1;
+      background: var(--surface-hover, rgba(0,0,0,0.07));
+    }
+    .pin-action-btn.is-unpin {
+      opacity: 0.8;
+      color: var(--maroon);
+    }
+    .pin-action-btn.is-unpin:hover {
+      opacity: 1;
+      background: var(--maroon-soft);
+    }
+    .pin-action-btn.is-pin:hover {
+      color: var(--teal);
+    }
   `],
   template: `
     <nav
@@ -335,15 +381,24 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
           <span class="section-label">Pinned</span>
           <div style="display: flex; flex-direction: column; gap: 2px;">
             @for (tool of pinnedTools(); track tool.id) {
-              <button
-                class="tool-item"
-                [class.active]="isActive(tool.route)"
-                (click)="navigate(tool.route)"
-                style="padding-left: 8px;"
-              >
-                <dt-icon [name]="tool.icon" [size]="13" />
-                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ tool.name }}</span>
-              </button>
+              <div class="pin-row">
+                <button
+                  class="tool-item"
+                  [class.active]="isActive(tool.route)"
+                  (click)="navigate(tool.route)"
+                  style="padding-left: 8px; flex:1;"
+                >
+                  <dt-icon [name]="tool.icon" [size]="13" />
+                  <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ tool.name }}</span>
+                </button>
+                <button
+                  class="pin-action-btn is-unpin"
+                  (click)="unpinTool(tool.id)"
+                  title="Unpin"
+                >
+                  <dt-icon name="x-circle" [size]="13" />
+                </button>
+              </div>
             }
           </div>
         </div>
@@ -398,14 +453,29 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
             <!-- Tools list (shown when expanded) -->
             @if (isExpanded(cat.id)) {
               @for (tool of cat.tools; track tool.id) {
-                <button
-                  class="tool-item"
-                  [class.active]="isActive(tool.route)"
-                  (click)="navigate(tool.route)"
-                >
-                  <dt-icon [name]="tool.icon" [size]="12" />
-                  <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ tool.name }}</span>
-                </button>
+                <div class="pin-row">
+                  <button
+                    class="tool-item"
+                    [class.active]="isActive(tool.route)"
+                    (click)="navigate(tool.route)"
+                    style="flex:1;"
+                  >
+                    <dt-icon [name]="tool.icon" [size]="12" />
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ tool.name }}</span>
+                  </button>
+                  <button
+                    class="pin-action-btn"
+                    [class.is-pin]="!isPinnedTool(tool.id)"
+                    [class.is-unpin]="isPinnedTool(tool.id)"
+                    (click)="togglePinTool(tool.id)"
+                    [title]="isPinnedTool(tool.id) ? 'Unpin' : 'Pin to sidebar'"
+                  >
+                    <dt-icon
+                      [name]="isPinnedTool(tool.id) ? 'pin-solid' : 'pin'"
+                      [size]="12"
+                    />
+                  </button>
+                </div>
               }
             }
 
@@ -472,6 +542,18 @@ export class SidebarComponent {
       .filter(Boolean)
   );
 
+  isPinnedTool(id: string): boolean {
+    return this.pinnedService.pinned().includes(id);
+  }
+
+  unpinTool(id: string): void {
+    this.pinnedService.unpin(id);
+  }
+
+  togglePinTool(id: string): void {
+    this.pinnedService.togglePin(id);
+  }
+
   readonly recentTools = computed(() =>
     this.pinnedService.recent()
       .map(id => TOOL_BY_ID[id])
@@ -502,6 +584,10 @@ export class SidebarComponent {
     const url = this.router.url.split('?')[0].split('#').pop() ?? '';
     if (route === '/home') {
       return url === '/home' || url === '/' || url === '';
+    }
+    // /about is a settings sub-page — keep Settings highlighted there too
+    if (route === '/settings') {
+      return url === '/settings' || url.startsWith('/settings/') || url === '/about';
     }
     return url === route || url.startsWith(route + '/');
   }

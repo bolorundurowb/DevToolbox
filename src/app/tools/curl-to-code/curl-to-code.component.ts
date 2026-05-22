@@ -174,6 +174,119 @@ function toGo(p: ParsedCurl): string {
   return lines.join('\n');
 }
 
+function toCsharp(p: ParsedCurl): string {
+  const lines: string[] = [];
+  const bodyIsJson = isJsonBody(p.body);
+  lines.push('using System;');
+  lines.push('using System.Net.Http;');
+  lines.push('using System.Net.Http.Headers;');
+  if (p.body) lines.push('using System.Text;');
+  lines.push('using System.Threading.Tasks;');
+  lines.push('');
+  lines.push('class Program {');
+  lines.push('  static async Task Main() {');
+  if (p.insecure) {
+    lines.push('    var handler = new HttpClientHandler {');
+    lines.push('      ServerCertificateCustomValidationCallback = (_, _, _, _) => true');
+    lines.push('    };');
+    lines.push('    using var client = new HttpClient(handler);');
+  } else {
+    lines.push('    using var client = new HttpClient();');
+  }
+  // Set headers (except Content-Type, handled separately)
+  const nonContentHeaders = Object.entries(p.headers).filter(([k]) => k.toLowerCase() !== 'content-type');
+  nonContentHeaders.forEach(([k, v]) => {
+    lines.push(`    client.DefaultRequestHeaders.Add(${JSON.stringify(k)}, ${JSON.stringify(v)});`);
+  });
+  if (p.body) {
+    const mediaType = bodyIsJson ? 'application/json' : (p.headers['Content-Type'] ?? 'text/plain');
+    lines.push(`    var content = new StringContent(${JSON.stringify(p.body)}, Encoding.UTF8, ${JSON.stringify(mediaType)});`);
+  }
+  const method = p.method.charAt(0) + p.method.slice(1).toLowerCase();
+  if (p.method === 'GET' || p.method === 'DELETE') {
+    lines.push(`    var response = await client.${method}Async(${JSON.stringify(p.url)});`);
+  } else if (p.method === 'POST' || p.method === 'PUT' || p.method === 'PATCH') {
+    lines.push(`    var response = await client.${method}Async(${JSON.stringify(p.url)}, content);`);
+  } else {
+    lines.push(`    var request = new HttpRequestMessage(new HttpMethod("${p.method}"), ${JSON.stringify(p.url)});`);
+    if (p.body) lines.push('    request.Content = content;');
+    lines.push('    var response = await client.SendAsync(request);');
+  }
+  lines.push('    var body = await response.Content.ReadAsStringAsync();');
+  lines.push('    Console.WriteLine(body);');
+  lines.push('  }');
+  lines.push('}');
+  return lines.join('\n');
+}
+
+function toJava(p: ParsedCurl): string {
+  const lines: string[] = [];
+  const bodyIsJson = isJsonBody(p.body);
+  lines.push('import okhttp3.*;');
+  lines.push('import java.io.IOException;');
+  lines.push('');
+  lines.push('public class Main {');
+  lines.push('  public static void main(String[] args) throws IOException {');
+  lines.push('    OkHttpClient client = new OkHttpClient();');
+  if (p.body) {
+    const mediaType = bodyIsJson ? 'application/json' : (p.headers['Content-Type'] ?? 'text/plain');
+    lines.push(`    MediaType mediaType = MediaType.parse(${JSON.stringify(mediaType)});`);
+    lines.push(`    RequestBody body = RequestBody.create(${JSON.stringify(p.body)}, mediaType);`);
+  }
+  lines.push('    Request request = new Request.Builder()');
+  lines.push(`      .url(${JSON.stringify(p.url)})`);
+  if (p.body) {
+    lines.push(`      .method(${JSON.stringify(p.method)}, body)`);
+  } else if (p.method !== 'GET') {
+    lines.push(`      .method(${JSON.stringify(p.method)}, null)`);
+  }
+  // Headers (skip Content-Type if body already sets it)
+  Object.entries(p.headers).forEach(([k, v]) => {
+    if (p.body && k.toLowerCase() === 'content-type') return;
+    lines.push(`      .addHeader(${JSON.stringify(k)}, ${JSON.stringify(v)})`);
+  });
+  lines.push('      .build();');
+  lines.push('    try (Response response = client.newCall(request).execute()) {');
+  lines.push('      System.out.println(response.body().string());');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push('}');
+  return lines.join('\n');
+}
+
+function toKotlin(p: ParsedCurl): string {
+  const lines: string[] = [];
+  const bodyIsJson = isJsonBody(p.body);
+  lines.push('import okhttp3.*');
+  lines.push('import okhttp3.MediaType.Companion.toMediaType');
+  if (p.body) lines.push('import okhttp3.RequestBody.Companion.toRequestBody');
+  lines.push('');
+  lines.push('fun main() {');
+  lines.push('    val client = OkHttpClient()');
+  if (p.body) {
+    const mediaType = bodyIsJson ? 'application/json' : (p.headers['Content-Type'] ?? 'text/plain');
+    lines.push(`    val mediaType = ${JSON.stringify(mediaType)}.toMediaType()`);
+    lines.push(`    val body = ${JSON.stringify(p.body)}.toRequestBody(mediaType)`);
+  }
+  lines.push('    val request = Request.Builder()');
+  lines.push(`        .url(${JSON.stringify(p.url)})`);
+  if (p.body) {
+    lines.push(`        .method(${JSON.stringify(p.method)}, body)`);
+  } else if (p.method !== 'GET') {
+    lines.push(`        .method(${JSON.stringify(p.method)}, null)`);
+  }
+  Object.entries(p.headers).forEach(([k, v]) => {
+    if (p.body && k.toLowerCase() === 'content-type') return;
+    lines.push(`        .addHeader(${JSON.stringify(k)}, ${JSON.stringify(v)})`);
+  });
+  lines.push('        .build()');
+  lines.push('    client.newCall(request).execute().use { response ->');
+  lines.push('        println(response.body!!.string())');
+  lines.push('    }');
+  lines.push('}');
+  return lines.join('\n');
+}
+
 function toPhp(p: ParsedCurl): string {
   const lines: string[] = [];
   lines.push('<?php');
@@ -207,7 +320,7 @@ function toPhp(p: ParsedCurl): string {
     </div>
     <div>
       <div style="font-size:15.5px;font-weight:600">cURL to Code</div>
-      <div style="font-size:12px;color:var(--text-muted)">Convert curl commands to fetch, axios, Python, Go, PHP</div>
+      <div style="font-size:12px;color:var(--text-muted)">Convert curl commands to fetch, axios, Python, Go, PHP, C#, Java, Kotlin</div>
     </div>
   </div>
 
@@ -260,11 +373,14 @@ function toPhp(p: ParsedCurl): string {
 })
 export class CurlToCodeComponent {
   tabs = [
-    { key: 'fetch', label: 'fetch (JS)' },
-    { key: 'axios', label: 'axios (JS)' },
-    { key: 'python', label: 'Python requests' },
-    { key: 'go', label: 'Go net/http' },
-    { key: 'php', label: 'PHP curl' },
+    { key: 'fetch',  label: 'fetch (JS)'       },
+    { key: 'axios',  label: 'axios (JS)'        },
+    { key: 'python', label: 'Python requests'   },
+    { key: 'go',     label: 'Go net/http'       },
+    { key: 'php',    label: 'PHP curl'          },
+    { key: 'csharp', label: 'C# HttpClient'     },
+    { key: 'java',   label: 'Java OkHttp'       },
+    { key: 'kotlin', label: 'Kotlin OkHttp'     },
   ];
   activeTab = signal('fetch');
   curlInput = '';
@@ -283,11 +399,14 @@ export class CurlToCodeComponent {
       if (!p.url) { this.error.set('Could not parse URL from curl command.'); return; }
       this.parsed.set(p);
       this.codes = {
-        fetch: toFetch(p),
-        axios: toAxios(p),
+        fetch:  toFetch(p),
+        axios:  toAxios(p),
         python: toPython(p),
-        go: toGo(p),
-        php: toPhp(p),
+        go:     toGo(p),
+        php:    toPhp(p),
+        csharp: toCsharp(p),
+        java:   toJava(p),
+        kotlin: toKotlin(p),
       };
     } catch (e: any) {
       this.error.set('Parse error: ' + (e?.message ?? String(e)));

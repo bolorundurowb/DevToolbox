@@ -1,27 +1,95 @@
-# DevtoolboxScaffold
+# DevToolbox
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.21.
+DevToolbox is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 18 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
 
-## Development server
+The app is designed for common "paste, inspect, convert, generate" tasks without sending data to a remote service.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Highlights
 
-## Code scaffolding
+- 40+ tools for formatting, encoding, crypto, images, networking, data conversion, and generated test data.
+- Local-first workflow for sensitive snippets, tokens, images, and configuration files.
+- Native desktop packaging through Tauri for Windows, macOS, and Linux.
+- Angular standalone components, lazy-loaded tool routes, and Tailwind-based styling.
+- Command palette, pinned tools, first-run onboarding, and light/dark/system themes.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Tool Categories
 
-## Build
+| Category | Examples |
+| --- | --- |
+| Text & Code | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester |
+| Encoding | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII conversion |
+| Hashing & Crypto | Hash generator, bcrypt, UUIDs, password generator, HMAC, RSA keys, certificates, AES |
+| Images | Converter, resizer, cropper, SVG optimizer, color tools |
+| Web & Network | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL to code, OpenAPI viewer |
+| Data Transform | CSV/JSON/XML, JSON/TOML, JSON Schema generation |
+| Utilities | Unit converter, number base converter, mock data generator, string escaper |
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Tech Stack
 
-## Running unit tests
+- Angular 18 and TypeScript 5.5
+- Tauri v2 and Rust 1.77+
+- Tailwind CSS 3
+- Karma and Jasmine for Angular unit tests
+- Rust crates for image processing, hashing, HMAC, bcrypt, UUIDs, and Tauri plugins
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Quick Start
 
-## Running end-to-end tests
+Prerequisites:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+- Node.js 20 LTS recommended
+- Rust 1.77.2 or newer
+- Tauri v2 system dependencies for your platform
+- Tauri CLI v2 through Cargo or npm
 
-## Further help
+```bash
+npm install
+npm run tauri:dev
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The Angular dev server runs on `http://localhost:4200`, and Tauri opens the desktop window against that dev server.
+
+For a browser-only development loop:
+
+```bash
+npm start
+```
+
+For production desktop bundles:
+
+```bash
+npm run tauri:build
+```
+
+Build outputs are written under `src-tauri/target/release/bundle/`.
+
+## Common Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm start` | Run the Angular dev server on port 4200 |
+| `npm run build` | Build the Angular frontend |
+| `npm test` | Run Angular unit tests with Karma/Jasmine |
+| `npm run tauri:dev` | Run Angular and the Tauri desktop shell in development |
+| `npm run tauri:build` | Build production desktop bundles |
+
+## Project Layout
+
+```text
+DevToolbox/
+├── src/                 Angular application
+│   ├── app/core/        Tool catalog, shared icons, and services
+│   ├── app/layout/      Shell, sidebar, topbar, and command palette
+│   ├── app/pages/       Home, onboarding, settings, and about pages
+│   └── app/tools/       Lazy-loaded tool components
+├── src-tauri/           Tauri configuration and Rust backend commands
+├── public/              Static frontend assets
+└── CONTRIBUTING.md      Contributor workflow and project standards
+```
+
+## Contributing
+
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup expectations, coding conventions, checks to run, and guidance for adding new tools.
+
+## License
+
+DevToolbox is released under the MIT license.

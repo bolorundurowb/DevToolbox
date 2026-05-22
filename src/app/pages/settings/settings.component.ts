@@ -4,13 +4,13 @@ import { Router } from '@angular/router';
 import { IconComponent } from '../../core/icon.component';
 import { SettingsService, Theme, AccentColor } from '../../core/services/settings.service';
 import { PinnedService } from '../../core/services/pinned.service';
+import { HistoryService } from '../../core/services/history.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 
 type Section = 'General' | 'Appearance' | 'Shortcuts' | 'Plugins' | 'History' | 'Advanced';
 
-interface NavItem { label: Section | 'About'; icon: string; isAbout?: boolean }
-
-const NAV: NavItem[] = [
+/* Shared nav — kept in sync with about.component.ts */
+const NAV = [
   { label: 'General',    icon: 'cog' },
   { label: 'Appearance', icon: 'palette' },
   { label: 'Shortcuts',  icon: 'key' },
@@ -30,16 +30,13 @@ const ACCENT_COLORS: { value: AccentColor; label: string }[] = [
 
 const SHORTCUTS = [
   { section: 'Navigation', rows: [
-    { keys: ['⌘', 'K'],  win: ['Ctrl', 'K'],  desc: 'Open search palette' },
-    { keys: ['⌘', 'H'],  win: ['Ctrl', 'H'],  desc: 'Go to Home' },
-    { keys: ['⌘', ','],  win: ['Ctrl', ','],  desc: 'Open Settings' },
-  ]},
-  { section: 'Tools', rows: [
-    { keys: ['⌘', '1–9'], win: ['Ctrl', '1–9'], desc: 'Jump to recent tool' },
+    { keys: ['⌘', 'K'], desc: 'Open search palette' },
+    { keys: ['⌘', 'H'], desc: 'Go to Home' },
+    { keys: ['⌘', ','], desc: 'Open Settings' },
   ]},
   { section: 'Window', rows: [
-    { keys: ['⌘', 'W'],  win: ['Alt', 'F4'],  desc: 'Close window' },
-    { keys: ['⌘', 'M'],  win: ['Win', '↓'],   desc: 'Minimise window' },
+    { keys: ['⌘', 'W'], desc: 'Close window' },
+    { keys: ['⌘', 'M'], desc: 'Minimise window' },
   ]},
 ];
 
@@ -50,78 +47,79 @@ const SHORTCUTS = [
   styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
   template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
-  <dt-topbar [crumbs]="['Settings']" />
+  <dt-topbar [crumbs]="['Settings', active()]" />
 
   <div style="flex:1;overflow:hidden;display:flex;min-height:0">
 
-    <!-- ── Left nav ───────────────────────────────────────────────── -->
-    <nav style="width:188px;min-width:188px;padding:16px 10px;border-right:1px solid var(--border);background:var(--surface-muted);display:flex;flex-direction:column;gap:2px;overflow-y:auto">
+    <!-- ── Left nav ─────────────────────────────────────────────────── -->
+    <nav style="width:200px;min-width:200px;padding:20px 12px;border-right:1px solid var(--border);background:var(--surface-muted);display:flex;flex-direction:column;gap:2px;overflow-y:auto">
       @for (item of nav; track item.label) {
-        <button
-          (click)="handleNav(item)"
+        <button (click)="handleNav(item)"
           style="display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border-radius:7px;border:none;cursor:pointer;text-align:left;font-size:13px;font-family:var(--font-ui);transition:background 0.1s"
           [style.background]="item.label === active() ? 'var(--maroon-soft)' : 'transparent'"
           [style.color]="item.label === active() ? 'var(--maroon-ink)' : 'var(--text)'"
-          [style.font-weight]="item.label === active() ? '600' : '400'"
-        >
+          [style.font-weight]="item.label === active() ? '600' : '400'">
           <dt-icon [name]="item.icon" [size]="13" [color]="item.label === active() ? 'var(--maroon)' : 'var(--text-muted)'" />
           {{ item.label }}
         </button>
       }
     </nav>
 
-    <!-- ── Main panel ─────────────────────────────────────────────── -->
-    <div style="flex:1;overflow-y:auto;padding:28px 36px 48px">
-      <div style="max-width:620px">
+    <!-- ── Main panel ────────────────────────────────────────────────── -->
+    <div style="flex:1;overflow-y:auto;padding:28px 36px 40px">
+      <div style="max-width:640px">
 
-        <!-- ════════════ GENERAL ════════════ -->
+        <!-- ══ GENERAL ══════════════════════════════════════════════════ -->
         @if (active() === 'General') {
-          <h2 class="sh">General</h2>
-
-          <!-- On-launch toggles -->
-          <div style="display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px">
-            <div style="padding:10px 16px 6px;font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px">On launch</div>
-            @for (row of launchToggles; track row.key) {
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border-top:1px solid var(--border)">
-                <div>
-                  <div style="font-size:13.5px;font-weight:500;color:var(--text)">{{ row.label }}</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">{{ row.desc }}</div>
+          <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">On launch</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              @for (row of launchToggles; track row.key) {
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                  <div>
+                    <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">{{ row.label }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">{{ row.desc }}</div>
+                  </div>
+                  <button (click)="toggle(row.key)"
+                    style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
+                    [style.background]="getBool(row.key) ? 'var(--teal)' : 'var(--surface-muted)'">
+                    <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
+                      [style.left]="getBool(row.key) ? '19px' : '3px'"></span>
+                  </button>
                 </div>
-                <button (click)="toggle(row.key)" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
-                  [style.background]="getBool(row.key) ? 'var(--teal)' : 'var(--border)'">
-                  <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
-                    [style.left]="getBool(row.key) ? '19px' : '3px'"></span>
-                </button>
-              </div>
-            }
+              }
+            </div>
           </div>
 
-          <!-- Update toggles -->
-          <div style="display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-            <div style="padding:10px 16px 6px;font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px">Updates</div>
-            @for (row of updateToggles; track row.key) {
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border-top:1px solid var(--border)">
-                <div>
-                  <div style="font-size:13.5px;font-weight:500;color:var(--text)">{{ row.label }}</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">{{ row.desc }}</div>
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <div>
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Updates</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              @for (row of updateToggles; track row.key) {
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                  <div>
+                    <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">{{ row.label }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">{{ row.desc }}</div>
+                  </div>
+                  <button (click)="toggle(row.key)"
+                    style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
+                    [style.background]="getBool(row.key) ? 'var(--teal)' : 'var(--surface-muted)'">
+                    <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
+                      [style.left]="getBool(row.key) ? '19px' : '3px'"></span>
+                  </button>
                 </div>
-                <button (click)="toggle(row.key)" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
-                  [style.background]="getBool(row.key) ? 'var(--teal)' : 'var(--border)'">
-                  <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
-                    [style.left]="getBool(row.key) ? '19px' : '3px'"></span>
-                </button>
-              </div>
-            }
+              }
+            </div>
           </div>
         }
 
-        <!-- ════════════ APPEARANCE ════════════ -->
+        <!-- ══ APPEARANCE ════════════════════════════════════════════════ -->
         @if (active() === 'Appearance') {
-          <h2 style="margin:0 0 20px;font-size:17px;font-weight:650;color:var(--text);letter-spacing:-0.02em">Appearance</h2>
 
           <!-- Theme -->
-          <div style="margin-bottom:24px">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Theme</label>
+          <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Theme</h2>
             <div style="display:flex;gap:8px">
               @for (t of themes; track t.value) {
                 <button (click)="setTheme(t.value)"
@@ -137,13 +135,15 @@ const SHORTCUTS = [
             </div>
           </div>
 
-          <!-- Accent color -->
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <!-- Accent colour -->
           <div style="margin-bottom:28px">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Accent colour</label>
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Accent colour</h2>
             <div style="display:flex;gap:12px;align-items:center">
               @for (ac of accentColors; track ac.value) {
                 <button (click)="setAccent(ac.value)" [title]="ac.label"
-                  style="width:30px;height:30px;border-radius:50%;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;position:relative;display:flex;align-items:center;justify-content:center"
+                  style="width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;display:flex;align-items:center;justify-content:center"
                   [style.background]="ac.value"
                   [style.border]="settings().accent === ac.value ? '2.5px solid var(--text)' : '2px solid transparent'"
                   [style.box-shadow]="settings().accent === ac.value ? '0 0 0 2px ' + ac.value : 'none'"
@@ -153,48 +153,56 @@ const SHORTCUTS = [
                   }
                 </button>
               }
-              <span style="font-size:12px;color:var(--text-muted);margin-left:4px">{{ accentLabel() }}</span>
+              <span style="font-size:12.5px;color:var(--text-muted);margin-left:4px">{{ accentLabel() }}</span>
             </div>
           </div>
 
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
           <!-- Fonts (read-only) -->
-          <div style="margin-bottom:24px">
-            <label style="display:block;font-size:12px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Fonts</label>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden">
-              <div style="display:flex;align-items:center;padding:12px 16px;gap:12px">
-                <span style="font-size:13px;color:var(--text-muted);min-width:100px">UI font</span>
-                <span style="font-size:13px;color:var(--text)">System default</span>
+          <div>
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Fonts</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">UI font</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Used for all interface text</div>
+                </div>
+                <span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-ui)">System default</span>
               </div>
-              <div style="display:flex;align-items:center;padding:12px 16px;gap:12px;border-top:1px solid var(--border)">
-                <span style="font-size:13px;color:var(--text-muted);min-width:100px">Code font</span>
-                <span style="font-size:13px;color:var(--text);font-family:var(--font-mono)">JetBrains Mono</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Code font</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Used in all editor and mono panels</div>
+                </div>
+                <span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-mono)">JetBrains Mono</span>
               </div>
             </div>
           </div>
         }
 
-        <!-- ════════════ SHORTCUTS ════════════ -->
+        <!-- ══ SHORTCUTS ══════════════════════════════════════════════════ -->
         @if (active() === 'Shortcuts') {
-          <h2 style="margin:0 0 20px;font-size:17px;font-weight:650;color:var(--text);letter-spacing:-0.02em">Keyboard shortcuts</h2>
+          <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Keyboard shortcuts</h2>
 
-          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:9px;padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:8px">
+          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:8px">
             <dt-icon name="information-circle" [size]="14" color="var(--text-muted)" />
             <span style="font-size:12.5px;color:var(--text-muted)">
-              Shortcuts use <strong style="font-family:var(--font-mono)">⌘</strong> on macOS and <strong style="font-family:var(--font-mono)">Ctrl</strong> on Windows/Linux.
+              <strong style="font-family:var(--font-mono)">⌘</strong> on macOS &nbsp;·&nbsp;
+              <strong style="font-family:var(--font-mono)">Ctrl</strong> on Windows / Linux
             </span>
           </div>
 
           @for (group of shortcutGroups; track group.section) {
             <div style="margin-bottom:20px">
-              <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;padding:0 2px">{{ group.section }}</div>
-              <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden">
-                @for (row of group.rows; track row.desc; let first = $first) {
-                  <div style="display:flex;align-items:center;padding:11px 16px;gap:16px"
-                    [style.border-top]="first ? 'none' : '1px solid var(--border)'">
-                    <div style="flex:1;font-size:13px;color:var(--text)">{{ row.desc }}</div>
+              <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">{{ group.section }}</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                @for (row of group.rows; track row.desc) {
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                    <span style="font-size:13.5px;color:var(--text);font-weight:500">{{ row.desc }}</span>
                     <div style="display:flex;gap:4px;align-items:center">
                       @for (k of row.keys; track k; let last = $last) {
-                        <kbd style="padding:2px 7px;border-radius:5px;background:var(--surface-muted);border:1px solid var(--border);font-size:11.5px;font-family:var(--font-mono);color:var(--text)">{{ k }}</kbd>
+                        <kbd style="padding:2px 8px;border-radius:5px;background:var(--surface-muted);border:1px solid var(--border);font-size:11.5px;font-family:var(--font-mono);color:var(--text)">{{ k }}</kbd>
                         @if (!last) { <span style="font-size:10px;color:var(--text-faint)">+</span> }
                       }
                     </div>
@@ -205,151 +213,146 @@ const SHORTCUTS = [
           }
         }
 
-        <!-- ════════════ PLUGINS ════════════ -->
+        <!-- ══ PLUGINS ════════════════════════════════════════════════════ -->
         @if (active() === 'Plugins') {
-          <h2 style="margin:0 0 20px;font-size:17px;font-weight:650;color:var(--text);letter-spacing:-0.02em">Plugins</h2>
+          <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Plugins</h2>
 
-          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:9px;padding:10px 14px;margin-bottom:20px;display:flex;align-items:center;gap:8px">
+          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:24px;display:flex;align-items:center;gap:8px">
             <dt-icon name="information-circle" [size]="14" color="var(--text-muted)" />
             <span style="font-size:12.5px;color:var(--text-muted)">Plugin support is planned for a future release. All current tools are built-in.</span>
           </div>
 
-          <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Built-in capabilities</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden">
-            @for (cap of builtinCaps; track cap.name; let first = $first) {
-              <div style="display:flex;align-items:center;gap:12px;padding:11px 16px"
-                [style.border-top]="first ? 'none' : '1px solid var(--border)'">
-                <div style="width:28px;height:28px;border-radius:7px;background:var(--maroon-soft);display:grid;place-items:center;flex-shrink:0">
-                  <dt-icon [name]="cap.icon" [size]="13" color="var(--maroon)" />
+          <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Built-in capabilities</h2>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            @for (cap of builtinCaps; track cap.name) {
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center;flex-shrink:0">
+                  <dt-icon [name]="cap.icon" [size]="14" color="var(--maroon)" />
                 </div>
-                <div>
-                  <div style="font-size:13px;font-weight:500;color:var(--text)">{{ cap.name }}</div>
-                  <div style="font-size:11.5px;color:var(--text-muted);margin-top:1px">{{ cap.desc }}</div>
+                <div style="flex:1">
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">{{ cap.name }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:1px;font-family:var(--font-ui)">{{ cap.desc }}</div>
                 </div>
-                <div style="margin-left:auto;font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(28,74,79,0.1);color:var(--teal);font-weight:600">Built-in</div>
+                <div style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(28,74,79,0.1);color:var(--teal);font-weight:600;flex-shrink:0">Built-in</div>
               </div>
             }
           </div>
         }
 
-        <!-- ════════════ HISTORY ════════════ -->
+        <!-- ══ HISTORY ════════════════════════════════════════════════════ -->
         @if (active() === 'History') {
-          <h2 style="margin:0 0 20px;font-size:17px;font-weight:650;color:var(--text);letter-spacing:-0.02em">History</h2>
-
-          <!-- Track history toggle -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px">
-              <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Track tool history</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Show recently used tools in the sidebar</div>
+          <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">History settings</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Track tool history</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Show recently used tools in the sidebar</div>
+                </div>
+                <button (click)="toggle('trackHistory')"
+                  style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
+                  [style.background]="settings().trackHistory ? 'var(--teal)' : 'var(--surface-muted)'">
+                  <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
+                    [style.left]="settings().trackHistory ? '19px' : '3px'"></span>
+                </button>
               </div>
-              <button (click)="toggle('trackHistory')" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s"
-                [style.background]="settings().trackHistory ? 'var(--teal)' : 'var(--border)'">
-                <span style="position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"
-                  [style.left]="settings().trackHistory ? '19px' : '3px'"></span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Max items -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px">
-            <div style="padding:14px 16px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Max recent items</div>
-                <span style="font-size:13px;font-weight:600;color:var(--maroon)">{{ settings().maxHistory }}</span>
-              </div>
-              <input type="range" [(ngModel)]="maxHistoryProxy" (ngModelChange)="setMaxHistory($event)"
-                min="5" max="50" step="5"
-                style="width:100%;accent-color:var(--maroon)" />
-              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);margin-top:4px">
-                <span>5</span><span>50</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Max recent items</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Currently set to {{ settings().maxHistory }} items</div>
+                </div>
+                <input type="range" [(ngModel)]="maxHistoryProxy" (ngModelChange)="setMaxHistory($event)"
+                  min="5" max="50" step="5"
+                  style="width:120px;accent-color:var(--maroon)" />
               </div>
             </div>
           </div>
 
-          <!-- Danger zone -->
-          <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Danger zone</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px">
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <div>
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Danger zone</h2>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
               <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Clear recent history</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Remove all recently visited tools from the sidebar</div>
+                <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Clear recent history</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Remove all recently visited tools from the sidebar</div>
               </div>
               <button (click)="clearHistory()"
-                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b;transition:background 0.1s">
+                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b;white-space:nowrap">
                 Clear
               </button>
             </div>
+            @if (historyCleared()) {
+              <div style="margin-top:12px;padding:10px 14px;background:rgba(28,74,79,0.1);border:1px solid rgba(28,74,79,0.25);border-radius:8px;font-size:12.5px;color:var(--teal);display:flex;align-items:center;gap:6px">
+                <dt-icon name="check-circle" [size]="14" color="var(--teal)" /> History cleared.
+              </div>
+            }
           </div>
-
-          @if (historyCleared()) {
-            <div style="margin-top:12px;padding:10px 14px;background:rgba(28,74,79,0.1);border:1px solid rgba(28,74,79,0.25);border-radius:8px;font-size:12.5px;color:var(--teal);display:flex;align-items:center;gap:6px">
-              <dt-icon name="check-circle" [size]="14" color="var(--teal)" /> History cleared.
-            </div>
-          }
         }
 
-        <!-- ════════════ ADVANCED ════════════ -->
+        <!-- ══ ADVANCED ════════════════════════════════════════════════════ -->
         @if (active() === 'Advanced') {
-          <h2 style="margin:0 0 20px;font-size:17px;font-weight:650;color:var(--text);letter-spacing:-0.02em">Advanced</h2>
-
-          <!-- Export / Import -->
-          <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Settings file</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px">
-              <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Export settings</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Download your settings as a JSON file</div>
+          <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Settings file</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Export settings</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Download your settings as a JSON file</div>
+                </div>
+                <button (click)="exportSettings()"
+                  style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid var(--border);background:var(--surface-muted);color:var(--text);white-space:nowrap">
+                  Export
+                </button>
               </div>
-              <button (click)="exportSettings()"
-                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid var(--border);background:var(--surface-muted);color:var(--text)">
-                Export
-              </button>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-top:1px solid var(--border)">
-              <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Import settings</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Restore from a previously exported file</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Import settings</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Restore from a previously exported file</div>
+                </div>
+                <button (click)="importSettings()"
+                  style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid var(--border);background:var(--surface-muted);color:var(--text);white-space:nowrap">
+                  Import…
+                </button>
               </div>
-              <button (click)="importSettings()"
-                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid var(--border);background:var(--surface-muted);color:var(--text)">
-                Import…
-              </button>
             </div>
           </div>
 
-          <!-- Danger zone -->
-          <div style="font-size:11px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Danger zone</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px">
-              <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Reset settings</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Restore all settings to their factory defaults</div>
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <div>
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Danger zone</h2>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Reset settings</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Restore all settings to their factory defaults</div>
+                </div>
+                <button (click)="confirmReset()"
+                  style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b;white-space:nowrap">
+                  {{ resetPending() ? 'Confirm reset?' : 'Reset' }}
+                </button>
               </div>
-              <button (click)="confirmReset()"
-                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b">
-                {{ resetPending() ? 'Confirm reset?' : 'Reset' }}
-              </button>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-top:1px solid var(--border)">
-              <div>
-                <div style="font-size:13.5px;font-weight:500;color:var(--text)">Clear all data</div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Erase settings, pinned tools, and history</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Clear all data</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Erase settings, pinned tools, and history</div>
+                </div>
+                <button (click)="confirmClearAll()"
+                  style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b;white-space:nowrap">
+                  {{ clearAllPending() ? 'Confirm clear?' : 'Clear all' }}
+                </button>
               </div>
-              <button (click)="confirmClearAll()"
-                style="padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;border:1px solid rgba(180,30,30,.35);background:rgba(180,30,30,.07);color:#c0392b">
-                {{ clearAllPending() ? 'Confirm clear?' : 'Clear all' }}
-              </button>
             </div>
           </div>
 
           @if (importError()) {
-            <div style="padding:10px 14px;background:rgba(180,30,30,.1);border:1px solid rgba(180,30,30,.25);border-radius:8px;font-size:12.5px;color:#c0392b">
+            <div style="margin-top:16px;padding:10px 14px;background:rgba(180,30,30,.1);border:1px solid rgba(180,30,30,.25);border-radius:8px;font-size:12.5px;color:#c0392b">
               Import failed: {{ importError() }}
             </div>
           }
           @if (importOk()) {
-            <div style="padding:10px 14px;background:rgba(28,74,79,0.1);border:1px solid rgba(28,74,79,0.25);border-radius:8px;font-size:12.5px;color:var(--teal);display:flex;align-items:center;gap:6px">
+            <div style="margin-top:16px;padding:10px 14px;background:rgba(28,74,79,0.1);border:1px solid rgba(28,74,79,0.25);border-radius:8px;font-size:12.5px;color:var(--teal);display:flex;align-items:center;gap:6px">
               <dt-icon name="check-circle" [size]="14" color="var(--teal)" /> Settings imported successfully.
             </div>
           }
@@ -362,9 +365,10 @@ const SHORTCUTS = [
 `,
 })
 export class SettingsComponent {
-  private router = inject(Router);
-  private svc   = inject(SettingsService);
-  private pinned = inject(PinnedService);
+  private router      = inject(Router);
+  private svc         = inject(SettingsService);
+  private pinned      = inject(PinnedService);
+  private historySvc  = inject(HistoryService);
 
   readonly nav          = NAV;
   readonly accentColors = ACCENT_COLORS;
@@ -376,38 +380,37 @@ export class SettingsComponent {
     { value: 'system', label: 'System', icon: 'cog' },
   ];
 
-  readonly launchToggles: { key: any; label: string; desc: string }[] = [
+  readonly launchToggles: { key: string; label: string; desc: string }[] = [
     { key: 'openLastTool',     label: 'Open last used tool',   desc: 'Resume where you left off' },
     { key: 'showReleaseNotes', label: 'Show release notes',    desc: 'Display what\'s new after an update' },
     { key: 'startWithSystem',  label: 'Start with system',     desc: 'Launch DevToolbox at login' },
   ];
 
-  readonly updateToggles: { key: any; label: string; desc: string }[] = [
+  readonly updateToggles: { key: string; label: string; desc: string }[] = [
     { key: 'autoCheckUpdates',  label: 'Auto-check for updates', desc: 'Check in the background periodically' },
     { key: 'bgDownloadUpdates', label: 'Background download',    desc: 'Download updates silently' },
     { key: 'includeBeta',       label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
   ];
 
   readonly builtinCaps = [
-    { name: '42 Developer Tools',    icon: 'braces',          desc: 'JSON, hashing, encoding, image processing and more' },
-    { name: 'Offline-first',         icon: 'lock',            desc: 'Everything runs locally — no network required' },
-    { name: 'Tauri v2 Backend',      icon: 'cog',             desc: 'Native Rust commands for crypto and image processing' },
-    { name: 'Theme engine',          icon: 'palette',         desc: 'Light / dark / system with custom accent colours' },
-    { name: 'Command palette',       icon: 'search',          desc: 'Instant fuzzy search across all tools (⌘K)' },
-    { name: 'Pin & history',         icon: 'bookmark',        desc: 'Bookmark your most-used tools for quick access' },
+    { name: '42 Developer Tools',   icon: 'braces',   desc: 'JSON, hashing, encoding, image processing and more' },
+    { name: 'Offline-first',        icon: 'lock',     desc: 'Everything runs locally — no network required' },
+    { name: 'Tauri v2 backend',     icon: 'cog',      desc: 'Native Rust commands for crypto and image processing' },
+    { name: 'Theme engine',         icon: 'palette',  desc: 'Light / dark / system with custom accent colours' },
+    { name: 'Command palette',      icon: 'search',   desc: 'Instant fuzzy search across all tools (⌘K)' },
+    { name: 'Pin & history',        icon: 'pin',      desc: 'Pin your most-used tools for quick access' },
   ];
 
-  readonly active       = signal<Section | 'About'>('General');
-  readonly settings     = this.svc.settings;
-  readonly historyCleared = signal(false);
-  readonly resetPending   = signal(false);
+  readonly active          = signal<string>('General');
+  readonly settings        = this.svc.settings;
+  readonly historyCleared  = signal(false);
+  readonly resetPending    = signal(false);
   readonly clearAllPending = signal(false);
-  readonly importError  = signal('');
-  readonly importOk     = signal(false);
+  readonly importError     = signal('');
+  readonly importOk        = signal(false);
 
   maxHistoryProxy = this.svc.settings().maxHistory;
 
-  /** Type-safe boolean read for toggle rows */
   getBool(key: string): boolean {
     return !!(this.svc.settings() as unknown as Record<string, unknown>)[key];
   }
@@ -416,16 +419,16 @@ export class SettingsComponent {
     return ACCENT_COLORS.find(a => a.value === this.settings().accent)?.label ?? '';
   }
 
-  handleNav(item: NavItem): void {
+  handleNav(item: { label: string; isAbout?: boolean }): void {
     if (item.isAbout) { this.router.navigate(['/about']); return; }
-    this.active.set(item.label as Section);
+    this.active.set(item.label);
   }
 
-  setTheme(theme: Theme): void  { this.svc.update({ theme }); }
+  setTheme(theme: Theme): void { this.svc.update({ theme }); }
   setAccent(accent: AccentColor): void { this.svc.update({ accent }); }
 
   toggle(key: string): void {
-    const cur = (this.svc.settings() as any)[key];
+    const cur = (this.svc.settings() as unknown as Record<string, unknown>)[key];
     this.svc.update({ [key]: !cur } as any);
   }
 
@@ -433,28 +436,21 @@ export class SettingsComponent {
 
   clearHistory(): void {
     this.pinned.clearRecent();
+    this.historySvc.clearAll();
     this.historyCleared.set(true);
     setTimeout(() => this.historyCleared.set(false), 2500);
   }
 
   confirmReset(): void {
-    if (this.resetPending()) {
-      this.svc.resetToDefaults();
-      this.resetPending.set(false);
-    } else {
-      this.resetPending.set(true);
-      setTimeout(() => this.resetPending.set(false), 3000);
-    }
+    if (this.resetPending()) { this.svc.resetToDefaults(); this.resetPending.set(false); }
+    else { this.resetPending.set(true); setTimeout(() => this.resetPending.set(false), 3000); }
   }
 
   confirmClearAll(): void {
     if (this.clearAllPending()) {
-      this.svc.resetToDefaults();
-      this.pinned.clearAll();
-      this.clearAllPending.set(false);
+      this.svc.resetToDefaults(); this.pinned.clearAll(); this.clearAllPending.set(false);
     } else {
-      this.clearAllPending.set(true);
-      setTimeout(() => this.clearAllPending.set(false), 3000);
+      this.clearAllPending.set(true); setTimeout(() => this.clearAllPending.set(false), 3000);
     }
   }
 

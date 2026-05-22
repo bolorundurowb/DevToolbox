@@ -7,6 +7,7 @@ import { CommandPaletteComponent } from '../command-palette/command-palette.comp
 import { SearchService } from '../../core/services/search.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { PinnedService } from '../../core/services/pinned.service';
+import { HistoryService } from '../../core/services/history.service';
 import { ALL_TOOLS } from '../../core/tool-catalog';
 
 @Component({
@@ -48,15 +49,20 @@ export class ShellComponent {
   readonly sidebarWidth = computed(() => this.settingsService.sidebarWidth());
 
   constructor() {
-    const router = inject(Router);
+    const router        = inject(Router);
     const pinnedService = inject(PinnedService);
+    const historySvc    = inject(HistoryService);
+
     router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(e => {
       const url = (e as NavigationEnd).urlAfterRedirects;
       const m = url.match(/\/tools\/([^?#]+)/);
       if (m) {
         const routePath = '/tools/' + m[1];
         const tool = ALL_TOOLS.find(t => t.route === routePath);
-        if (tool) pinnedService.recordVisit(tool.id);
+        if (tool) {
+          pinnedService.recordVisit(tool.id);   // keeps Recent (last 5)
+          historySvc.record(tool.id);           // full history with timestamps
+        }
       }
     });
   }

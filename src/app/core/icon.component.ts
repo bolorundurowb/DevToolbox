@@ -7,6 +7,7 @@ const PATHS: Record<string, string> = {
   star: `<path d="M8 1.5l2 4.4 4.8.6-3.5 3.3.9 4.7L8 12.2 3.8 14.5l.9-4.7L1.2 6.5 6 5.9 8 1.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   clock: `<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
   settings: `<circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+  cog: `<circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
   plug: `<path d="M5 1v3M11 1v3M3.5 4h9v3a4.5 4.5 0 01-9 0V4zM8 11.5V15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   braces: `<path d="M5.5 1.5h-1A1.5 1.5 0 003 3v3.5L1.5 8 3 9.5V13a1.5 1.5 0 001.5 1.5h1M10.5 1.5h1A1.5 1.5 0 0113 3v3.5L14.5 8 13 9.5V13a1.5 1.5 0 01-1.5 1.5h-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   code: `<path d="M5 4L1.5 8 5 12M11 4l3.5 4-3.5 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
@@ -69,6 +70,7 @@ const PATHS: Record<string, string> = {
   bookmark: `<path d="M3.5 2h9v12.5L8 12 3.5 14.5V2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   'bookmark-solid': `<path d="M3.5 2h9v12.5L8 12 3.5 14.5V2z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   pin: `<path d="M8 13.5V8M5 7V4.5A1 1 0 016 3.5h4a1 1 0 011 1V7l1.5 1.5h-9L5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  'pin-solid': `<path d="M8 13.5V8M5 7V4.5A1 1 0 016 3.5h4a1 1 0 011 1V7l1.5 1.5h-9L5 7z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
 
 @Component({

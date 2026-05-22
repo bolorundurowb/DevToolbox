@@ -26,6 +26,10 @@ export const routes: Routes = [
         path: 'about',
         loadComponent: () => import('./pages/about/about.component').then(m => m.AboutComponent),
       },
+      {
+        path: 'history',
+        loadComponent: () => import('./pages/history/history.component').then(m => m.HistoryComponent),
+      },
       // Tools
       {
         path: 'tools/json',

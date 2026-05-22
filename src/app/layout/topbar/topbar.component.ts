@@ -37,18 +37,23 @@ import type { Theme } from '../../core/services/settings.service';
       <!-- Spacer -->
       <div class="flex-1"></div>
 
-      <!-- Pin button (only shown when on a tool page) -->
+      <!-- Pin button + "Pinned" badge (only shown when on a tool page) -->
       @if (toolId()) {
         <button
           (click)="togglePin()"
           [title]="isPinned() ? 'Unpin from sidebar' : 'Pin to sidebar'"
-          style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted)"
+          [style.background]="isPinned() ? 'var(--maroon-soft)' : 'transparent'"
+          [style.border-color]="isPinned() ? 'var(--maroon)' : 'var(--border)'"
+          style="height:30px;padding:0 10px;border-radius:8px;border-width:1px;border-style:solid;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--font-ui);transition:background 0.15s,border-color 0.15s"
         >
           <dt-icon
-            [name]="isPinned() ? 'bookmark-solid' : 'bookmark'"
-            [size]="15"
+            [name]="isPinned() ? 'pin-solid' : 'pin'"
+            [size]="14"
             [color]="isPinned() ? 'var(--maroon)' : 'var(--text-muted)'"
           />
+          @if (isPinned()) {
+            <span style="font-size:12px;font-weight:600;color:var(--maroon);white-space:nowrap">Pinned</span>
+          }
         </button>
       }
 
