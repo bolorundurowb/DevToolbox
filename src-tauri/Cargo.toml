@@ -1,0 +1,56 @@
+[package]
+name = "devtoolbox"
+version = "1.0.0"
+description = "DevToolbox — 30 local-first developer tools, one window."
+authors = ["DevToolbox Contributors"]
+license = "MIT"
+repository = "https://github.com/yourname/devtoolbox"
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "devtoolbox_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api"] }
+tauri-plugin-updater = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Image processing
+image = { version = "0.25", features = ["png", "jpeg", "webp", "avif"] }
+base64 = "0.22"
+
+# Crypto
+sha2 = "0.10"
+sha1 = "0.10"
+md-5 = "0.10"
+crc32fast = "1"
+hmac = "0.12"
+pbkdf2 = { version = "0.12", features = ["hmac"] }
+bcrypt = "0.15"
+hex = "0.4"
+
+# IDs
+uuid = { version = "1", features = ["v1", "v4", "v7"] }
+
+# Async
+tokio = { version = "1", features = ["full"] }
+
+[profile.release]
+panic = "abort"  # Strip expensive panic clean-up logic
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
