@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* JetBrains Mono from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #faf8f5;
+  --surface: #ffffff;
+  --surface-muted: #f3f0eb;
+  --border: rgba(28,26,24,0.10);
+  --border-strong: rgba(28,26,24,0.18);
+  --text: #1c1a18;
+  --text-muted: rgba(28,26,24,0.65);
+  --text-faint: rgba(28,26,24,0.42);
+  --maroon: #7a2436;
+  --maroon-soft: rgba(122,36,54,0.10);
+  --maroon-ink: #5c1a28;
+  --teal: #1c4a4f;
+  --teal-soft: rgba(28,74,79,0.10);
+  --teal-ink: #143437;
+  --font-ui: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+  --sidebar-width: 232px;
+}
+
+.dark {
+  --bg: #161412;
+  --surface: #1c1a17;
+  --surface-muted: #221f1c;
+  --border: rgba(255,247,235,0.07);
+  --border-strong: rgba(255,247,235,0.14);
+  --text: #f5f1ec;
+  --text-muted: rgba(245,241,236,0.62);
+  --text-faint: rgba(245,241,236,0.38);
+  --maroon: #c14a64;
+  --maroon-soft: rgba(193,74,100,0.14);
+  --maroon-ink: #e89aab;
+  --teal: #5dc2c8;
+  --teal-soft: rgba(93,194,200,0.12);
+  --teal-ink: #a8e1e5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* Allow text selection in editors and output */
+.selectable, textarea, input, pre, code, .allow-select { user-select: text; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* Remove default button styles */
+button { font-family: var(--font-ui); cursor: pointer; border: none; background: none; }
+
+/* Monaco editor host fix */
+.monaco-editor .overflow-guard { border-radius: 0 !important; }
+
