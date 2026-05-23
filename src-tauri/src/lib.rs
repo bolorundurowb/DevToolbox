@@ -1,5 +1,6 @@
 mod commands;
 
+#[cfg(target_os = "macos")]
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -22,11 +23,11 @@ pub fn run() {
             commands::bcrypt_hash,
             commands::bcrypt_verify,
         ])
-        .setup(|app| {
+        .setup(|_app| {
             // macOS: restore window appearance after transparent titlebar
             #[cfg(target_os = "macos")]
             {
-                let window = app.get_webview_window("main").unwrap();
+                let window = _app.get_webview_window("main").unwrap();
                 window.set_title("Dev Core Tools")?;
             }
             Ok(())

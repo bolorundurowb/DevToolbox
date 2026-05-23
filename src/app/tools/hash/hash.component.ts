@@ -100,7 +100,7 @@ interface HashResult {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Crypto', 'Hash']" [toolId]="'hash'" />
+    <dt-topbar [crumbs]="['Crypto', 'Hash Generator']" [toolId]="'hash'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
       <dt-icon name="finger-print" [size]="16" color="var(--maroon)" />

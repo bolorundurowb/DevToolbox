@@ -1,5 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { invoke } from '@tauri-apps/api/core';
+import { readFile } from '@tauri-apps/plugin-fs';
+import { tempDir } from '@tauri-apps/api/path';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -23,6 +26,12 @@ const PRESETS: { label: string; w: number; h: number }[] = [
   { label: 'Thumb', w: 320, h: 240 },
 ];
 
+const NATIVE_IMAGE_THRESHOLD_BYTES = 2 * 1024 * 1024;
+
+interface NativeImageResult {
+  output_path: string;
+}
+
 let _nextId = 0;
 
 @Component({
@@ -31,7 +40,7 @@ let _nextId = 0;
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'Image Resizer']" [toolId]="'img-resize'" />
+  <dt-topbar [crumbs]="['Images', 'Image Resizer']" [toolId]="'img-resize'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-soft);display:grid;place-items:center">
@@ -214,7 +223,39 @@ export class ImgResizerComponent {
 
   removeItem(id: number) { this.items.update(arr => arr.filter(i => i.id !== id)); }
 
-  resizeImage(file: File, w: number, h: number, q: number): Promise<Blob> {
+  private nativePathFor(file: File): string | null {
+    const path = (file as File & { path?: unknown }).path;
+    return typeof path === 'string' && path.length > 0 ? path : null;
+  }
+
+  private async resizeImageNative(file: File, w: number, h: number, q: number): Promise<Blob | null> {
+    const inputPath = this.nativePathFor(file);
+    if (!inputPath || file.size < NATIVE_IMAGE_THRESHOLD_BYTES) return null;
+
+    const result = await invoke<NativeImageResult>('convert_image', {
+      options: {
+        input_path: inputPath,
+        output_dir: await tempDir(),
+        format: 'JPG',
+        quality: q,
+        resize_width: w,
+        resize_height: h,
+        keep_aspect: false,
+        strip_metadata: true,
+      },
+    });
+    const bytes = await readFile(result.output_path);
+    return new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' });
+  }
+
+  async resizeImage(file: File, w: number, h: number, q: number): Promise<Blob> {
+    try {
+      const nativeBlob = await this.resizeImageNative(file, w, h, q);
+      if (nativeBlob) return nativeBlob;
+    } catch {
+      // Canvas fallback keeps browser/dev-server usage working and covers native codec failures.
+    }
+
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);

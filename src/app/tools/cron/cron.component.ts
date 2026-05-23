@@ -43,11 +43,11 @@ function describeCronField(field: string, type: string): string {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'Cron Parser']" [toolId]="'cron'" />
+  <dt-topbar [crumbs]="['Web & Network', 'Cron Parser']" [toolId]="'cron'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-soft);display:grid;place-items:center">
-      <dt-icon name="clock" [size]="16" color="var(--teal)" />
+      <dt-icon name="calendar" [size]="16" color="var(--teal)" />
     </div>
     <div>
       <div style="font-size:15px;font-weight:600">Cron Parser</div>

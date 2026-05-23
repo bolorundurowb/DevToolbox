@@ -1,5 +1,8 @@
-import { Component, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { invoke } from '@tauri-apps/api/core';
+import { readFile } from '@tauri-apps/plugin-fs';
+import { tempDir } from '@tauri-apps/api/path';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -23,6 +26,12 @@ const EXT_MAP: Record<string, string> = {
   PNG: 'png', JPG: 'jpg', WebP: 'webp', AVIF: 'avif',
 };
 
+const NATIVE_IMAGE_THRESHOLD_BYTES = 2 * 1024 * 1024;
+
+interface NativeImageResult {
+  output_path: string;
+}
+
 let nextId = 0;
 
 @Component({
@@ -31,7 +40,7 @@ let nextId = 0;
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'Image Converter']" [toolId]="'img-convert'" />
+  <dt-topbar [crumbs]="['Images', 'Image Converter']" [toolId]="'img-convert'" />
 
   <!-- Header bar -->
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -40,7 +49,7 @@ let nextId = 0;
     </div>
     <div>
       <div style="font-size:15px;font-weight:600">Image Converter</div>
-      <div style="font-size:12px;color:var(--text-muted)">Convert PNG, JPG, WebP, AVIF via Canvas API</div>
+      <div style="font-size:12px;color:var(--text-muted)">Convert PNG, JPG, WebP, AVIF with native fallback for large files</div>
     </div>
     <div style="flex:1"></div>
     <button (click)="convertAll()" [disabled]="pendingCount() === 0"
@@ -251,7 +260,40 @@ export class ImgConverterComponent {
     // aspect lock handled at convert time
   }
 
+  private nativePathFor(file: File): string | null {
+    const path = (file as File & { path?: unknown }).path;
+    return typeof path === 'string' && path.length > 0 ? path : null;
+  }
+
+  private async convertImageNative(file: File, targetFmt: string, q: number): Promise<Blob | null> {
+    const inputPath = this.nativePathFor(file);
+    const shouldUseNative = file.size >= NATIVE_IMAGE_THRESHOLD_BYTES || !!this.resizeWidth || !!this.resizeHeight;
+    if (!inputPath || !shouldUseNative) return null;
+
+    const result = await invoke<NativeImageResult>('convert_image', {
+      options: {
+        input_path: inputPath,
+        output_dir: await tempDir(),
+        format: targetFmt,
+        quality: q,
+        resize_width: this.resizeWidth,
+        resize_height: this.resizeHeight,
+        keep_aspect: this.lockAspect(),
+        strip_metadata: true,
+      },
+    });
+    const bytes = await readFile(result.output_path);
+    return new Blob([new Uint8Array(bytes)], { type: MIME_MAP[targetFmt] });
+  }
+
   async convertImage(file: File, targetFmt: string, q: number): Promise<Blob> {
+    try {
+      const nativeBlob = await this.convertImageNative(file, targetFmt, q);
+      if (nativeBlob) return nativeBlob;
+    } catch {
+      // Browser conversion keeps the tool usable outside Tauri and if a codec is unavailable natively.
+    }
+
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);

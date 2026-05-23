@@ -4,6 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { CommandPaletteComponent } from '../command-palette/command-palette.component';
+import { WindowControlsComponent } from '../window-controls/window-controls.component';
 import { SearchService } from '../../core/services/search.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { PinnedService } from '../../core/services/pinned.service';
@@ -12,22 +13,26 @@ import { ALL_TOOLS } from '../../core/tool-catalog';
 
 @Component({
   selector: 'dt-shell',
-  imports: [RouterModule, SidebarComponent, CommandPaletteComponent],
+  imports: [RouterModule, SidebarComponent, CommandPaletteComponent, WindowControlsComponent],
   template: `
     <div
-      class="flex h-screen overflow-hidden"
+      class="flex flex-col h-screen overflow-hidden"
       [style.background]="'var(--bg)'"
       [style.font-family]="'var(--font-ui)'"
       [style.--sidebar-width]="sidebarWidth() + 'px'"
     >
-      <!-- Sidebar -->
-      <dt-sidebar />
+      <dt-window-controls />
 
-      <!-- Main content area -->
-      <div class="flex flex-col flex-1 min-w-0 overflow-hidden relative">
-        <!-- Router outlet fills the main area -->
-        <div class="flex-1 overflow-auto">
-          <router-outlet />
+      <div class="flex flex-1 min-h-0 overflow-hidden">
+        <!-- Sidebar -->
+        <dt-sidebar />
+
+        <!-- Main content area -->
+        <div class="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+          <!-- Router outlet fills the main area -->
+          <div class="flex-1 overflow-auto">
+            <router-outlet />
+          </div>
         </div>
       </div>
 
