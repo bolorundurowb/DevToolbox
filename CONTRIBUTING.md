@@ -20,6 +20,31 @@ npm run tauri:dev
 
 For Angular-only UI work, `npm start` is usually enough.
 
+## Tauri CLI
+
+This project uses the Tauri v2 CLI for native desktop features. While you can use the project-local version, some contributors prefer a global installation.
+
+### Project-Local (Recommended)
+You can run Tauri commands using the scripts defined in `package.json` without any additional installation:
+
+```bash
+npm run tauri -- <command>
+# Example: npm run tauri dev
+```
+
+### Global Installation
+If you want the `tauri` command available directly in your terminal:
+
+**Via Cargo (Rust):**
+```bash
+cargo install tauri-cli --version "^2.0.0"
+```
+
+**Via npm:**
+```bash
+npm install -g @tauri-apps/cli@latest
+```
+
 ## Contribution Workflow
 
 1. Create a focused branch for your change.
