@@ -62,6 +62,7 @@ export const CATEGORIES: Category[] = [
       { id: 'img-resize',  name: 'Image Resizer',   icon: 'resize',  desc: 'Batch, presets, aspect-lock',    catId: 'image', catName: 'Images', route: '/tools/img-resizer',    keywords: ['image', 'resize', 'scale', 'dimensions'] },
       { id: 'img-crop',    name: 'Image Cropper',   icon: 'crop',    desc: 'Manual + smart crop',            catId: 'image', catName: 'Images', route: '/tools/img-cropper',    keywords: ['image', 'crop', 'trim', 'cut'] },
       { id: 'svg-opt',     name: 'SVG Optimizer',   icon: 'image',   desc: 'Strip metadata, shrink paths',   catId: 'image', catName: 'Images', route: '/tools/svg-optimizer',  keywords: ['svg', 'optimize', 'compress', 'svgo'] },
+      { id: 'svg-export',  name: 'SVG Exporter',    icon: 'image',   desc: 'Preview and export SVG to PNG/JPEG', catId: 'image', catName: 'Images', route: '/tools/svg-exporter', keywords: ['svg', 'export', 'png', 'jpeg', 'jpg', 'rasterize', 'convert'] },
       { id: 'color',         name: 'Color Tools',              icon: 'palette', desc: 'Convert, pick, contrast',                    catId: 'image', catName: 'Images', route: '/tools/color-tools',    keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch', 'picker'] },
       { id: 'palette-gen',  name: 'Colour Palette Generator', icon: 'palette', desc: 'Tetradic, triadic, complementary & more',     catId: 'image', catName: 'Images', route: '/tools/color-palette',  keywords: ['color', 'palette', 'harmony', 'tetradic', 'triadic', 'complementary', 'analogous', 'monochromatic', 'split', 'tints', 'shades', 'hsl', 'generator'] },
     ]
@@ -70,7 +71,8 @@ export const CATEGORIES: Category[] = [
     id: 'web', name: 'Web & Network', icon: 'globe',
     tools: [
       { id: 'cron',    name: 'Cron Parser',        icon: 'clock',   desc: 'Explain & preview schedules',     catId: 'web', catName: 'Web & Network', route: '/tools/cron',          keywords: ['cron', 'schedule', 'crontab', 'job'] },
-      { id: 'unix',    name: 'Unix Time',           icon: 'clock',   desc: 'Epoch ↔ ISO ↔ local',            catId: 'web', catName: 'Web & Network', route: '/tools/unix-time',     keywords: ['unix', 'epoch', 'timestamp', 'date', 'time', 'iso'] },
+      { id: 'unix',         name: 'Unix Time',           icon: 'clock',   desc: 'Epoch ↔ ISO ↔ local',                        catId: 'web', catName: 'Web & Network', route: '/tools/unix-time',     keywords: ['unix', 'epoch', 'timestamp', 'date', 'time', 'iso'] },
+      { id: 'datetime-util', name: 'Date & Time',        icon: 'clock',   desc: 'UTC · timezones · formats · precision',      catId: 'web', catName: 'Web & Network', route: '/tools/datetime-util', keywords: ['date', 'time', 'datetime', 'utc', 'timezone', 'iso', 'rfc', 'unix', 'format', 'precision', 'milliseconds', 'microseconds'] },
       { id: 'qr',      name: 'QR Code',             icon: 'qr',      desc: 'Generate · decode from image',   catId: 'web', catName: 'Web & Network', route: '/tools/qr',            keywords: ['qr', 'qrcode', 'barcode', 'generate'] },
       { id: 'cidr',    name: 'IP / CIDR',           icon: 'globe',   desc: 'Subnet calculator',              catId: 'web', catName: 'Web & Network', route: '/tools/ip-cidr',       keywords: ['ip', 'cidr', 'subnet', 'network', 'ipv4', 'ipv6'] },
       { id: 'ua',      name: 'User-Agent Parser',   icon: 'eye',     desc: 'OS · browser · device',          catId: 'web', catName: 'Web & Network', route: '/tools/user-agent',    keywords: ['user-agent', 'ua', 'browser', 'os', 'device', 'parse'] },

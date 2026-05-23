@@ -128,6 +128,10 @@ export const routes: Routes = [
         loadComponent: () => import('./tools/svg-optimizer/svg-optimizer.component').then(m => m.SvgOptimizerComponent),
       },
       {
+        path: 'tools/svg-exporter',
+        loadComponent: () => import('./tools/svg-exporter/svg-exporter.component').then(m => m.SvgExporterComponent),
+      },
+      {
         path: 'tools/color-tools',
         loadComponent: () => import('./tools/color-tools/color-tools.component').then(m => m.ColorToolsComponent),
       },
@@ -163,6 +167,7 @@ export const routes: Routes = [
       { path: 'tools/json-schema', loadComponent: () => import('./tools/json-schema/json-schema.component').then(m => m.JsonSchemaComponent) },
       { path: 'tools/curl-to-code', loadComponent: () => import('./tools/curl-to-code/curl-to-code.component').then(m => m.CurlToCodeComponent) },
       { path: 'tools/openapi-viewer', loadComponent: () => import('./tools/openapi-viewer/openapi-viewer.component').then(m => m.OpenapiViewerComponent) },
+      { path: 'tools/datetime-util', loadComponent: () => import('./tools/datetime-util/datetime-util.component').then(m => m.DatetimeUtilComponent) },
       { path: 'tools/unit-converter', loadComponent: () => import('./tools/unit-converter/unit-converter.component').then(m => m.UnitConverterComponent) },
       { path: 'tools/base-converter', loadComponent: () => import('./tools/base-converter/base-converter.component').then(m => m.BaseConverterComponent) },
       { path: 'tools/mock-data', loadComponent: () => import('./tools/mock-data/mock-data.component').then(m => m.MockDataComponent) },
