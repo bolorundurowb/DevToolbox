@@ -64,13 +64,13 @@ Build outputs are written under `src-tauri/target/release/bundle/`.
 
 ## Common Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm start` | Run the Angular dev server on port 4200 |
-| `npm run build` | Build the Angular frontend |
-| `npm test` | Run Angular unit tests with Karma/Jasmine |
-| `npm run tauri:dev` | Run Angular and the Tauri desktop shell in development |
-| `npm run tauri:build` | Build production desktop bundles |
+| Command               | Purpose                                                |
+|-----------------------|--------------------------------------------------------|
+| `npm start`           | Run the Angular dev server on port 4200                |
+| `npm run build`       | Build the Angular frontend                             |
+| `npm test`            | Run Angular unit tests with Karma/Jasmine              |
+| `npm run tauri:dev`   | Run Angular and the Tauri desktop shell in development |
+| `npm run tauri:build` | Build production desktop bundles                       |
 
 ## Project Layout
 
