@@ -16,31 +16,90 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 
 ## Highlights
 
-- 40+ tools for formatting, encoding, crypto, images, networking, data conversion, and generated test data.
+- 45+ tools for formatting, encoding, crypto, images, networking, data conversion, and generated test data.
 - Local-first workflow for sensitive snippets, tokens, images, and configuration files.
 - Native desktop packaging through Tauri for Windows, macOS, and Linux.
 - Angular standalone components, lazy-loaded tool routes, and Tailwind-based styling.
 - Command palette, pinned tools, first-run onboarding, and light/dark/system themes.
 
+## Screenshots
+
+**Windows**
+
+| Home                                            | Command Palette                                            | Settings                                            |
+|-------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------|
+| ![Home on Windows](assets/images/windows-1.png) | ![Command palette on Windows](assets/images/windows-2.png) | ![Settings on Windows](assets/images/windows-3.png) |
+
+**macOS**
+
+| Home                                        | Command Palette                                        | Tool View                                             |
+|---------------------------------------------|--------------------------------------------------------|-------------------------------------------------------|
+| ![Home on macOS](assets/images/macos-1.png) | ![Command palette on macOS](assets/images/macos-2.png) | ![UUID Generator on macOS](assets/images/macos-3.png) |
+
 ## Tool Categories
 
-| Category         | Examples                                                                                   |
-|------------------|--------------------------------------------------------------------------------------------|
-| Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester        |
-| Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII conversion                     |
-| Hashing & Crypto | Hash generator, bcrypt, UUIDs, password generator, HMAC, RSA keys, certificates, AES       |
-| Images           | Converter, resizer, cropper, SVG optimizer, color tools                                    |
-| Web & Network    | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL to code, OpenAPI viewer |
-| Data Transform   | CSV/JSON/XML, JSON/TOML, JSON Schema generation                                            |
-| Utilities        | Unit converter, number base converter, mock data generator, string escaper                 |
+| Category         | Examples                                                                                          |
+|------------------|---------------------------------------------------------------------------------------------------|
+| Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester, Lorem Ipsum  |
+| Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII, string escaper, text case converter  |
+| Hashing & Crypto | Hash generator, bcrypt, HMAC, AES, RSA keygen, UUIDs, password generator, cert decoder           |
+| Images           | Converter, resizer, cropper, SVG optimizer, SVG exporter, color tools, color palette              |
+| Web & Network    | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL-to-code, OpenAPI viewer       |
+| Data Transform   | CSV↔JSON, JSON↔TOML, JSON Schema generation, datetime utilities                                  |
+| Utilities        | Unit converter, number base converter, mock data generator, string escaper                        |
 
 ## Tech Stack
 
-- Angular 21 and TypeScript 5.9
-- Tauri v2 and Rust 1.77+
+- Angular 21.2 and TypeScript 5.9
+- Tauri v2.11 and Rust 1.77.2+
 - Tailwind CSS 3
 - Karma and Jasmine for Angular unit tests
 - Rust crates for image processing, hashing, HMAC, bcrypt, UUIDs, and Tauri plugins
+
+## Installation
+
+Pre-built installers are available on the [GitHub Releases](https://github.com/bolorundurowb/dev-core-tools/releases) page. Download the package for your platform and follow the steps below — no build toolchain required.
+
+### Windows
+
+| File    | Type           | Notes                               |
+|---------|----------------|-------------------------------------|
+| `*.msi` | MSI installer  | Recommended — supports auto-updates |
+| `*.exe` | NSIS installer | Standalone executable installer     |
+
+1. Download the `.msi` or `.exe` from the latest release.
+2. Run the installer and follow the prompts.
+3. Launch **Dev Core Tools** from the Start Menu.
+
+### macOS
+
+1. Download the `.dmg` from the latest release.
+2. Open the disk image and drag **Dev Core Tools** into your **Applications** folder.
+3. On first launch, right-click the app and choose **Open** to bypass the Gatekeeper prompt (the app is not yet notarised).
+
+### Linux
+
+| File         | Distro family            | Notes                             |
+|--------------|--------------------------|-----------------------------------|
+| `*.deb`      | Debian / Ubuntu          | Install with `sudo dpkg -i *.deb` |
+| `*.rpm`      | Fedora / RHEL / openSUSE | Install with `sudo rpm -i *.rpm`  |
+| `*.AppImage` | Any                      | Mark executable and run directly  |
+
+**Debian / Ubuntu:**
+```bash
+sudo dpkg -i dev-core-tools_*.deb
+```
+
+**Fedora / RHEL:**
+```bash
+sudo rpm -i dev-core-tools_*.rpm
+```
+
+**AppImage (any distro):**
+```bash
+chmod +x dev-core-tools_*.AppImage
+./dev-core-tools_*.AppImage
+```
 
 ## Quick Start
 
