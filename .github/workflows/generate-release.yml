@@ -151,9 +151,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.version.outputs.tag }}
           RELEASE_VERSION: ${{ needs.version.outputs.version }}
+          GH_REPO: ${{ github.repository }}
         shell: bash
         run: |
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
             echo "Release ${RELEASE_TAG} already exists. Nothing to do."
             exit 0
           fi
@@ -167,6 +168,7 @@ jobs:
           fi
 
           gh release create "$RELEASE_TAG" "${files[@]}" \
+            --repo "$GH_REPO" \
             --target "$GITHUB_SHA" \
             --title "Dev Core Tools ${RELEASE_TAG}" \
             --generate-notes
