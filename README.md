@@ -1,12 +1,14 @@
 <div align="center">
   <img
-    height="150"
-    width="150"
+    height="200"
+    width="200"
     src="https://raw.githubusercontent.com/bolorundurowb/dev-core-tools/refs/heads/master/assets/tool-icon.png"
     alt="Dev Core Logo"  />
 </div>
 
 # Dev Core Tools
+
+[![CI](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 21 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
 
