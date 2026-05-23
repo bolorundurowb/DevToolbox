@@ -94,7 +94,7 @@ function doUnescape(lang: Language, s: string): string {
   <dt-topbar [crumbs]="['Utilities', 'String Escaper']" [toolId]="'str-escape'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
-      <dt-icon name="code-bracket" [size]="16" color="var(--maroon)" />
+      <dt-icon name="braces" [size]="16" color="var(--maroon)" />
     </div>
     <div>
       <div style="font-size:15.5px;font-weight:600">String Escaper / Unescaper</div>

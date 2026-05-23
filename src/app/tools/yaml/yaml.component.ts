@@ -161,7 +161,7 @@ function jsonToYaml(jsonStr: string): string {
     imports: [TopbarComponent, IconComponent, FormsModule],
     template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
-      <dt-topbar [crumbs]="['Text & Code', 'YAML ↔ JSON']" [toolId]="'yaml'" />
+      <dt-topbar [crumbs]="['Text & Code', 'YAML / JSON Converter']" [toolId]="'yaml'" />
 
       <!-- Header bar -->
       <div style="display:flex;align-items:center;gap:10px;padding:10px 18px 8px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap">
@@ -169,7 +169,7 @@ function jsonToYaml(jsonStr: string): string {
           <dt-icon name="code" [size]="16" [color]="'var(--maroon)'" />
         </div>
         <div>
-          <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.2px;color:var(--text)">YAML ↔ JSON</div>
+          <div style="font-size:15.5px;font-weight:600;letter-spacing:-0.2px;color:var(--text)">YAML / JSON Converter</div>
           <div style="font-size:12px;color:var(--text-muted)">Convert between YAML and JSON formats</div>
         </div>
         <div style="flex:1"></div>

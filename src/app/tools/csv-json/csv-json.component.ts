@@ -75,13 +75,13 @@ function csvToXml(text: string, delim: string): string {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Data Transform', 'CSV ↔ JSON / XML']" [toolId]="'csv-json'" />
+  <dt-topbar [crumbs]="['Data Transform', 'CSV / JSON / XML Converter']" [toolId]="'csv-json'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
-      <dt-icon name="code-bracket" [size]="16" color="var(--maroon)" />
+      <dt-icon name="database" [size]="16" color="var(--maroon)" />
     </div>
     <div>
-      <div style="font-size:15.5px;font-weight:600">CSV ↔ JSON / XML</div>
+      <div style="font-size:15.5px;font-weight:600">CSV / JSON / XML Converter</div>
       <div style="font-size:12px;color:var(--text-muted)">Convert tabular data between formats</div>
     </div>
   </div>

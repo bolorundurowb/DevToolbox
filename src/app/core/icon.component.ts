@@ -71,6 +71,10 @@ const PATHS: Record<string, string> = {
   'bookmark-solid': `<path d="M3.5 2h9v12.5L8 12 3.5 14.5V2z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   pin: `<path d="M8 13.5V8M5 7V4.5A1 1 0 016 3.5h4a1 1 0 011 1V7l1.5 1.5h-9L5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   'pin-solid': `<path d="M8 13.5V8M5 7V4.5A1 1 0 016 3.5h4a1 1 0 011 1V7l1.5 1.5h-9L5 7z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  svg: `<path d="M3 1.5h7l3 3V14.5H3V1.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 1.5V5h3M5.2 8L4 9.5 5.2 11M10.8 8L12 9.5 10.8 11M9.2 7.5l-2.4 4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  calendar: `<rect x="2" y="3" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 1.5v3M11 1.5v3M2 6.5h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+  database: `<ellipse cx="8" cy="3.5" rx="5" ry="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 3.5v6.8c0 1.1 2.2 2.2 5 2.2s5-1.1 5-2.2V3.5M3 7c0 1.1 2.2 2.2 5 2.2s5-1.1 5-2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+  network: `<circle cx="4" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="4" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.8 7.1l4.4-2.2M5.8 8.9l4.4 2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
 };
 
 @Component({

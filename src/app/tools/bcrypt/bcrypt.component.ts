@@ -1,7 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { invoke } from '@tauri-apps/api/core';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+
+interface BcryptResult {
+  hash: string;
+  cost: number;
+}
 
 @Component({
     selector: 'dt-tool-bcrypt',
@@ -9,20 +15,20 @@ import { IconComponent } from '../../core/icon.component';
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Crypto', 'Bcrypt']" [toolId]="'bcrypt'" />
+  <dt-topbar [crumbs]="['Crypto', 'Bcrypt Password Hash']" [toolId]="'bcrypt'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
       <dt-icon name="lock-closed" [size]="16" color="var(--maroon)" />
     </div>
     <div>
-      <div style="font-size:15.5px;font-weight:600">Bcrypt</div>
+      <div style="font-size:15.5px;font-weight:600">Bcrypt Password Hash</div>
       <div style="font-size:12px;color:var(--text-muted)">Hash and verify passwords with bcrypt</div>
     </div>
   </div>
   <!-- Note banner -->
   <div style="padding:8px 22px;background:rgba(20,120,200,.07);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px">
     <dt-icon name="information-circle" [size]="13" color="var(--text-muted)" />
-    Browser preview uses PBKDF2-SHA256. Production hashing uses Tauri Rust backend with native bcrypt.
+    Uses the Tauri Rust backend for native bcrypt. Browser-only fallback is a PBKDF2 compatibility preview.
   </div>
   <!-- Tab bar -->
   <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -131,7 +137,7 @@ export class BcryptComponent {
   toggleHashPwd() { this.showHashPwd.set(!this.showHashPwd()); }
   toggleVerifyPwd() { this.showVerifyPwd.set(!this.showVerifyPwd()); }
 
-  async hashBcrypt(password: string, rounds: number): Promise<string> {
+  async hashBcryptFallback(password: string, rounds: number): Promise<string> {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2,'0')).join('');
     const key = await crypto.subtle.importKey(
@@ -144,7 +150,7 @@ export class BcryptComponent {
     return `$2b$${rounds.toString().padStart(2,'0')}$${saltHex}${hashHex}`;
   }
 
-  async verifyBcrypt(password: string, hash: string): Promise<boolean> {
+  async verifyBcryptFallback(password: string, hash: string): Promise<boolean> {
     // Parse our simulated hash format: $2b$NN$<16-byte-salt-hex><32-byte-hash-hex>
     const parts = hash.split('$');
     if (parts.length < 4 || parts[1] !== '2b') throw new Error('Invalid hash format (expected $2b$NN$...)');
@@ -162,6 +168,23 @@ export class BcryptComponent {
     );
     const computedHex = Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2,'0')).join('');
     return computedHex === storedHashHex;
+  }
+
+  async hashBcrypt(password: string, rounds: number): Promise<string> {
+    try {
+      const result = await invoke<BcryptResult>('bcrypt_hash', { password, cost: rounds });
+      return result.hash;
+    } catch {
+      return this.hashBcryptFallback(password, rounds);
+    }
+  }
+
+  async verifyBcrypt(password: string, hash: string): Promise<boolean> {
+    try {
+      return await invoke<boolean>('bcrypt_verify', { password, hash });
+    } catch {
+      return this.verifyBcryptFallback(password, hash);
+    }
   }
 
   async hashPwd() {

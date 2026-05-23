@@ -45,14 +45,14 @@ interface ConvertedRow {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'Unix Time']" [toolId]="'unix'" />
+  <dt-topbar [crumbs]="['Web & Network', 'Unix Time Converter']" [toolId]="'unix'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--teal-soft);display:grid;place-items:center">
       <dt-icon name="clock" [size]="16" color="var(--teal)" />
     </div>
     <div>
-      <div style="font-size:15px;font-weight:600">Unix Time</div>
+      <div style="font-size:15px;font-weight:600">Unix Time Converter</div>
       <div style="font-size:12px;color:var(--text-muted)">Convert Unix timestamps to human-readable dates</div>
     </div>
     <div style="flex:1"></div>

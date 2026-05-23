@@ -22,11 +22,11 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'SVG Optimizer']" [toolId]="'svg-opt'" />
+  <dt-topbar [crumbs]="['Images', 'SVG Optimizer']" [toolId]="'svg-opt'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
-      <dt-icon name="code" [size]="16" color="var(--maroon)" />
+      <dt-icon name="svg" [size]="16" color="var(--maroon)" />
     </div>
     <div>
       <div style="font-size:15px;font-weight:600">SVG Optimizer</div>

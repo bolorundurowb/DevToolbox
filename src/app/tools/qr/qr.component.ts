@@ -21,7 +21,7 @@ interface QROptions {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'QR Code']" [toolId]="'qr'" />
+  <dt-topbar [crumbs]="['Web & Network', 'QR Code Generator']" [toolId]="'qr'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">

@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
-/* ── Colour math helpers ──────────────────────────────────────────────── */
+/* ── Color math helpers ───────────────────────────────────────────────── */
 function hexToRgb(hex: string): [number, number, number] | null {
   const h = hex.replace('#', '');
   if (!/^[0-9a-f]{6}$/i.test(h)) return null;
@@ -258,7 +258,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
   `],
   template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
-  <dt-topbar [crumbs]="['Images', 'Colour Palette Generator']" toolId="palette-gen" />
+  <dt-topbar [crumbs]="['Images', 'Color Palette Generator']" toolId="palette-gen" />
 
   <div style="flex:1;overflow:auto;padding:28px 36px 40px">
     <div style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
@@ -268,7 +268,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
 
         <!-- Base colour picker -->
         <div style="display:flex;flex-direction:column;gap:8px">
-          <label style="font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px">Base Colour</label>
+          <label style="font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px">Base Color</label>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="position:relative;width:44px;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0">
               <input type="color" [(ngModel)]="baseHex" (ngModelChange)="onColorPick($event)"
@@ -330,7 +330,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
             @for (sw of palette(); track sw.hex) {
               <div class="swatch-card">
-                <!-- Colour block -->
+                <!-- Color block -->
                 <div style="height:80px;display:flex;align-items:flex-end;padding:8px"
                   [style.background]="sw.hex">
                   <span style="font-size:10.5px;font-weight:600;font-family:var(--font-mono);opacity:0.85;letter-spacing:.3px"

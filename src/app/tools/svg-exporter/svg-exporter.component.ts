@@ -24,11 +24,11 @@ type ExportFormat = 'PNG' | 'JPEG';
   styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
   template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Tools', 'SVG Exporter']" [toolId]="'svg-export'" />
+  <dt-topbar [crumbs]="['Images', 'SVG Exporter']" [toolId]="'svg-export'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
-      <dt-icon name="image" [size]="16" color="var(--maroon)" />
+      <dt-icon name="svg" [size]="16" color="var(--maroon)" />
     </div>
     <div>
       <div style="font-size:15px;font-weight:600">SVG Exporter</div>
