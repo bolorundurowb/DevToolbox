@@ -1,10 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
 import { invoke } from '@tauri-apps/api/core';
+import { getVersion } from '@tauri-apps/api/app';
 import { IconComponent } from '../../core/icon.component';
 import { SettingsService } from '../../core/services/settings.service';
+import { ALL_TOOLS } from '../../core/tool-catalog';
 
 interface SystemInfo {
   os: string;
@@ -78,7 +80,7 @@ function formatArch(arch: string): string {
         <p
           style="margin:0 0 22px; font-size:14px; color:var(--text-muted); line-height:1.6; font-family:var(--font-ui);"
         >
-          30 developer utilities in one app — JSON, encoding, hashing, images,
+          {{ ALL_TOOLS.length }}+ developer utilities in one app — JSON, encoding, hashing, images,
           and more. Everything runs locally, no internet required.
         </p>
 
@@ -140,7 +142,7 @@ function formatArch(arch: string): string {
               <div
                 style="font-size:12px; color:var(--text-muted); margin-top:2px; font-family:var(--font-ui);"
               >
-                Fuzzy-search all 30 tools instantly
+                Fuzzy-search all tools instantly
               </div>
             </div>
           </div>
@@ -178,38 +180,6 @@ function formatArch(arch: string): string {
             </div>
           </div>
 
-          <div
-            style="
-            display:flex; align-items:center; gap:14px;
-            padding:14px 16px;
-            border-radius:10px;
-            background:var(--surface);
-            border:1px solid var(--border);
-          "
-          >
-            <div
-              style="
-              width:36px; height:36px; border-radius:8px;
-              background:var(--teal-soft);
-              display:flex; align-items:center; justify-content:center;
-              flex-shrink:0;
-            "
-            >
-              <dt-icon name="plug" [size]="16" [color]="'var(--teal-ink)'" />
-            </div>
-            <div>
-              <div
-                style="font-size:13.5px; font-weight:600; color:var(--text); font-family:var(--font-ui);"
-              >
-                Extend with plugins
-              </div>
-              <div
-                style="font-size:12px; color:var(--text-muted); margin-top:2px; font-family:var(--font-ui);"
-              >
-                Add community tools or build your own
-              </div>
-            </div>
-          </div>
         </div>
 
         <button
@@ -234,7 +204,7 @@ function formatArch(arch: string): string {
         <div
           style="margin-top:28px; font-size:11.5px; color:var(--text-faint); font-family:var(--font-mono);"
         >
-          v1.0.0 &middot; {{ platformLabel }}
+          v{{ appVersion() }} &middot; {{ platformLabel }}
         </div>
       </div>
     </div>
@@ -244,17 +214,28 @@ export class FirstRunComponent implements OnInit {
   private router = inject(Router);
   private settings = inject(SettingsService);
 
+  readonly ALL_TOOLS = ALL_TOOLS;
   displayName = '';
   platformLabel = this.browserPlatformLabel();
   readonly placeholderName = 'Chief';
+  readonly appVersion = signal('…');
 
   async ngOnInit(): Promise<void> {
     this.displayName = this.settings.settings().displayName;
     await Promise.all([
       this.settings.hydrateDisplayNameFromSystem(),
       this.hydrateSystemInfo(),
+      this.hydrateVersion(),
     ]);
     if (!this.displayName) this.displayName = this.settings.settings().displayName;
+  }
+
+  private async hydrateVersion(): Promise<void> {
+    try {
+      this.appVersion.set(await getVersion());
+    } catch {
+      this.appVersion.set('—');
+    }
   }
 
   private async hydrateSystemInfo(): Promise<void> {

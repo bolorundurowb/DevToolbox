@@ -443,9 +443,10 @@ export class SidebarComponent {
     if (route === '/home') {
       return url === '/home' || url === '/' || url === '';
     }
-    // /about is a settings sub-page — keep Settings highlighted there too
+    // /about is rendered as a Settings sub-page — keep Settings highlighted there too
+    const settingsRoutes = ['/settings', '/about'];
     if (route === '/settings') {
-      return url === '/settings' || url.startsWith('/settings/') || url === '/about';
+      return url.startsWith('/settings') || settingsRoutes.includes(url);
     }
     return url === route || url.startsWith(route + '/');
   }

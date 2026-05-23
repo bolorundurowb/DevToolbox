@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { open } from '@tauri-apps/plugin-shell';
+import { getVersion } from '@tauri-apps/api/app';
 import { IconComponent } from '../../core/icon.component';
 import { SettingsService } from '../../core/services/settings.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
+import { ALL_TOOLS } from '../../core/tool-catalog';
 
 /* Shared nav definition — kept in sync with settings.component.ts */
 const NAV = [
@@ -52,9 +54,9 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
           </div>
           <div style="padding-top:8px">
             <h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-ui)">Dev Core Tools</h1>
-            <p style="margin:0 0 10px;font-size:13.5px;color:var(--text-muted);font-family:var(--font-ui)">42 developer utilities, all offline.</p>
+            <p style="margin:0 0 10px;font-size:13.5px;color:var(--text-muted);font-family:var(--font-ui)">{{ toolCount }} developer utilities, all offline.</p>
             <div style="font-size:12px;color:var(--text-faint);font-family:var(--font-mono);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;display:inline-block">
-              v1.0.0 &middot; {{ platform }} &middot; {{ arch }}
+              {{ appVersion() }} &middot; {{ platform }} &middot; {{ arch }}
             </div>
           </div>
         </div>
@@ -65,7 +67,7 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
             <div style="flex:1">
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
                 <dt-icon name="arrow-path" [size]="14" color="var(--teal)" />
-                <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">Current version &middot; v1.0.0</span>
+                <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">Current version &middot; {{ appVersion() }}</span>
               </div>
               <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">Click "Check for updates" to view the latest release on GitHub.</p>
             </div>
@@ -131,10 +133,12 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
 </div>
 `
 })
-export class AboutComponent {
+export class AboutComponent implements OnInit {
   private router  = inject(Router);
   private svc     = inject(SettingsService);
 
+  readonly toolCount = ALL_TOOLS.length;
+  readonly appVersion = signal('…');
   readonly nav = NAV;
   readonly checkingUpdates = signal(false);
   readonly updateMessage = signal('');
@@ -152,11 +156,20 @@ export class AboutComponent {
   ];
 
   readonly credits = [
-    { label: 'Framework', value: 'Angular 20' },
-    { label: 'Desktop',   value: 'Tauri v2'   },
+    { label: 'Framework', value: 'Angular 21.2' },
+    { label: 'Desktop',   value: 'Tauri v2'      },
     { label: 'Icons',     value: 'Custom SVG set' },
     { label: 'Build',     value: 'Vite + esbuild' },
   ];
+
+  async ngOnInit(): Promise<void> {
+    try {
+      const v = await getVersion();
+      this.appVersion.set(`v${v}`);
+    } catch {
+      this.appVersion.set('v—');
+    }
+  }
 
   handleNav(label: string): void {
     if (label !== 'About') this.router.navigate(['/settings']);
