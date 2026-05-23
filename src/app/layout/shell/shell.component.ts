@@ -64,29 +64,38 @@ export class ShellComponent {
   }
 
   @HostListener('window:keydown', ['$event'])
-  @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const mod = event.metaKey || event.ctrlKey;
+    const key = event.key.toLowerCase();
 
     // ⌘K / Ctrl+K — open search palette
-    if (mod && event.key === 'k') {
+    if (mod && key === 'k') {
       event.preventDefault();
+      event.stopPropagation();
       if (this.searchService.isOpen()) {
         this.searchService.close();
       } else {
         this.searchService.open();
       }
+      return;
     }
 
     // ⌘, / Ctrl+, — open settings
     if (mod && event.key === ',') {
       event.preventDefault();
+      event.stopPropagation();
       inject(Router).navigate(['/settings']);
+      return;
     }
 
     // ⌘H / Ctrl+H — go home
-    if (mod && event.key === 'h') {
+    // Note: uses Ctrl+Shift+H on Windows to avoid WebView2 intercepting Ctrl+H
+    const isHome = event.metaKey
+      ? key === 'h'
+      : event.ctrlKey && event.shiftKey && key === 'h';
+    if (isHome) {
       event.preventDefault();
+      event.stopPropagation();
       inject(Router).navigate(['/home']);
     }
   }

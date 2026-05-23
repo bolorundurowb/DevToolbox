@@ -2,42 +2,103 @@ use serde::{Deserialize, Serialize};
 use tauri::command;
 use sha2::{Sha256, Sha512, Sha384, Digest};
 use sha1::Sha1;
+use md5::Md5;
+use crc32fast::Hasher as Crc32Hasher;
 use hmac::{Hmac, Mac};
 use hex;
+use tokio::io::AsyncReadExt;
 
 type HmacSha256 = Hmac<Sha256>;
 type HmacSha384 = Hmac<Sha384>;
 type HmacSha512 = Hmac<Sha512>;
 
-#[command]
-pub fn hash_text(text: String, algorithm: String) -> Result<String, String> {
-    Ok(match algorithm.as_str() {
+fn hash_bytes(data: &[u8], algorithm: &str) -> Result<String, String> {
+    Ok(match algorithm {
+        "MD5" => {
+            let mut h = Md5::new();
+            h.update(data);
+            hex::encode(h.finalize())
+        }
         "SHA-1" => {
             let mut h = Sha1::new();
-            h.update(text.as_bytes());
+            h.update(data);
             hex::encode(h.finalize())
         }
         "SHA-256" => {
             let mut h = Sha256::new();
-            h.update(text.as_bytes());
+            h.update(data);
             hex::encode(h.finalize())
         }
         "SHA-512" => {
             let mut h = Sha512::new();
-            h.update(text.as_bytes());
+            h.update(data);
             hex::encode(h.finalize())
+        }
+        "CRC-32" => {
+            let mut h = Crc32Hasher::new();
+            h.update(data);
+            format!("{:08x}", h.finalize())
         }
         _ => return Err(format!("Unknown algorithm: {}", algorithm)),
     })
 }
 
 #[command]
+pub fn hash_text(text: String, algorithm: String) -> Result<String, String> {
+    hash_bytes(text.as_bytes(), &algorithm)
+}
+
+#[command]
 pub async fn hash_file(path: String, algorithm: String) -> Result<String, String> {
-    let data = tokio::fs::read(&path).await.map_err(|e| e.to_string())?;
+    let mut file = tokio::fs::File::open(&path).await.map_err(|e| e.to_string())?;
+    let mut buffer = [0_u8; 64 * 1024];
+
     Ok(match algorithm.as_str() {
-        "SHA-1" => { let mut h = Sha1::new(); h.update(&data); hex::encode(h.finalize()) }
-        "SHA-256" => { let mut h = Sha256::new(); h.update(&data); hex::encode(h.finalize()) }
-        "SHA-512" => { let mut h = Sha512::new(); h.update(&data); hex::encode(h.finalize()) }
+        "MD5" => {
+            let mut h = Md5::new();
+            loop {
+                let read = file.read(&mut buffer).await.map_err(|e| e.to_string())?;
+                if read == 0 { break; }
+                h.update(&buffer[..read]);
+            }
+            hex::encode(h.finalize())
+        }
+        "SHA-1" => {
+            let mut h = Sha1::new();
+            loop {
+                let read = file.read(&mut buffer).await.map_err(|e| e.to_string())?;
+                if read == 0 { break; }
+                h.update(&buffer[..read]);
+            }
+            hex::encode(h.finalize())
+        }
+        "SHA-256" => {
+            let mut h = Sha256::new();
+            loop {
+                let read = file.read(&mut buffer).await.map_err(|e| e.to_string())?;
+                if read == 0 { break; }
+                h.update(&buffer[..read]);
+            }
+            hex::encode(h.finalize())
+        }
+        "SHA-512" => {
+            let mut h = Sha512::new();
+            loop {
+                let read = file.read(&mut buffer).await.map_err(|e| e.to_string())?;
+                if read == 0 { break; }
+                h.update(&buffer[..read]);
+            }
+            hex::encode(h.finalize())
+        }
+        "CRC-32" => {
+            let mut h = Crc32Hasher::new();
+            loop {
+                let read = file.read(&mut buffer).await.map_err(|e| e.to_string())?;
+                if read == 0 { break; }
+                h.update(&buffer[..read]);
+            }
+            format!("{:08x}", h.finalize())
+        }
         _ => return Err(format!("Unknown algorithm: {}", algorithm)),
     })
 }

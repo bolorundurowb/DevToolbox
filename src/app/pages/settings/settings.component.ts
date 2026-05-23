@@ -29,13 +29,13 @@ const ACCENT_COLORS: { value: AccentColor; label: string }[] = [
 
 const SHORTCUTS = [
   { section: 'Navigation', rows: [
-    { keys: ['⌘', 'K'], desc: 'Open search palette' },
-    { keys: ['⌘', 'H'], desc: 'Go to Home' },
-    { keys: ['⌘', ','], desc: 'Open Settings' },
+    { keys: ['⌘ / Ctrl', 'K'],       desc: 'Open search palette' },
+    { keys: ['⌘H / Ctrl+Shift', 'H'], desc: 'Go to Home' },
+    { keys: ['⌘ / Ctrl', ','],        desc: 'Open Settings' },
   ]},
   { section: 'Window', rows: [
-    { keys: ['⌘', 'W'], desc: 'Close window' },
-    { keys: ['⌘', 'M'], desc: 'Minimise window' },
+    { keys: ['⌘ / Ctrl', 'W'], desc: 'Close window' },
+    { keys: ['⌘ / Ctrl', 'M'], desc: 'Minimise window' },
   ]},
 ];
 
