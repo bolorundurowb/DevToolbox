@@ -57,7 +57,7 @@ export interface AppSettings {
 
 const DEFAULTS: AppSettings = {
   theme: 'system',
-  accent: '#7a2436',
+  accent: '#5b3a8a',
   uiFont: 'System default',
   codeFont: 'JetBrains Mono',
   density: 'comfortable',

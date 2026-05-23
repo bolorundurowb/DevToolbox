@@ -73,7 +73,7 @@ import { PinnedService } from '../../core/services/pinned.service';
           [style.font-size.px]="12.5"
           [style.color]="'var(--text-faint)'"
           [style.font-family]="'var(--font-ui)'"
-        >Search 30 tools&hellip;</span>
+        >Search tools&hellip;</span>
         <kbd
           class="flex items-center gap-0.5"
           [style.font-size.px]="11"
@@ -100,7 +100,7 @@ import { PinnedService } from '../../core/services/pinned.service';
         [style.color]="'var(--text-muted)'"
         title="Settings"
       >
-        <dt-icon name="cog" [size]="14" />
+        <dt-icon name="settings" [size]="14" />
       </button>
     </header>
   `

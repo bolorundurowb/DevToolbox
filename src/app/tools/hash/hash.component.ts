@@ -1,7 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+
+const LARGE_HASH_THRESHOLD_BYTES = 1024 * 1024;
 
 function md5(str: string): string {
   function safeAdd(x: number, y: number): number {
@@ -74,6 +78,12 @@ function toBase64(hex: string): string {
   return btoa(String.fromCharCode(...bytes));
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(2)} MB`;
+}
+
 interface HashResult {
   algo: string;
   bits: number;
@@ -111,7 +121,7 @@ interface HashResult {
     </label>
     <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;margin-left:auto">
       <input type="file" style="display:none" (change)="onFileSelected($event)" #fileInput />
-      <button (click)="fileInput.click()" style="background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11.5px;cursor:pointer;color:var(--text-muted)">Hash file</button>
+      <button (click)="selectFile(fileInput)" style="background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:11.5px;cursor:pointer;color:var(--text-muted)">Hash file</button>
     </label>
     <div style="display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden">
       <button (click)="outputFormat.set('hex')" [style.background]="outputFormat()==='hex'?'var(--maroon)':'transparent'" [style.color]="outputFormat()==='hex'?'#fff':'var(--text-muted)'" style="padding:4px 10px;font-size:12px;font-weight:500;border:none;cursor:pointer">Hex</button>
@@ -126,6 +136,9 @@ interface HashResult {
       style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:7px;outline:none;padding:10px 12px;font-family:var(--font-mono);font-size:13px;background:var(--surface);color:var(--text);line-height:1.5;box-sizing:border-box"></textarea>
     @if (fileInfo()) {
       <div style="margin-top:6px;font-size:11.5px;color:var(--teal)">File: {{ fileInfo() }}</div>
+    }
+    @if (hashError()) {
+      <div style="margin-top:6px;font-size:11.5px;color:var(--maroon)">{{ hashError() }}</div>
     }
   </div>
   <!-- Hash cards -->
@@ -161,6 +174,7 @@ export class HashComponent {
   autoHash = true;
   outputFormat = signal<'hex'|'base64'>('hex');
   fileInfo = signal('');
+  hashError = signal('');
   results = signal<HashResult[]>([
     { algo: 'MD5', bits: 128, hex: '', base64: '', loading: false, copiedHex: false, copiedB64: false },
     { algo: 'SHA-1', bits: 160, hex: '', base64: '', loading: false, copiedHex: false, copiedB64: false },
@@ -173,11 +187,32 @@ export class HashComponent {
 
   async computeAll(data?: string) {
     const text = data ?? this.input;
+    this.hashError.set('');
     if (!text) {
       this.results.update(rs => rs.map(r => ({ ...r, hex: '', base64: '' })));
       return;
     }
     this.results.update(rs => rs.map(r => ({ ...r, loading: true })));
+    const shouldUseRust = new TextEncoder().encode(text).byteLength >= LARGE_HASH_THRESHOLD_BYTES;
+    try {
+      const map = shouldUseRust
+        ? await this.computeWithRust(text)
+        : await this.computeWithBrowser(text);
+
+      this.applyHashMap(map);
+    } catch (e: any) {
+      if (!shouldUseRust) {
+        this.hashError.set('Hashing failed: ' + (e?.message ?? String(e)));
+        this.results.update(rs => rs.map(r => ({ ...r, loading: false })));
+        return;
+      }
+
+      this.hashError.set('Native hashing unavailable; used browser fallback.');
+      this.applyHashMap(await this.computeWithBrowser(text));
+    }
+  }
+
+  private async computeWithBrowser(text: string): Promise<Record<string, string>> {
     const md5Hex = md5(text);
     const crc32Hex = crc32(text);
     const [sha1Hex, sha256Hex, sha512Hex] = await Promise.all([
@@ -185,9 +220,20 @@ export class HashComponent {
       hashSha('SHA-256', text),
       hashSha('SHA-512', text),
     ]);
-    const map: Record<string, string> = {
+    return {
       'MD5': md5Hex, 'SHA-1': sha1Hex, 'SHA-256': sha256Hex, 'SHA-512': sha512Hex, 'CRC-32': crc32Hex
     };
+  }
+
+  private async computeWithRust(text: string): Promise<Record<string, string>> {
+    const entries = await Promise.all(this.results().map(async r => [
+      r.algo,
+      await invoke<string>('hash_text', { text, algorithm: r.algo })
+    ] as const));
+    return Object.fromEntries(entries);
+  }
+
+  private applyHashMap(map: Record<string, string>) {
     this.results.update(rs => rs.map(r => ({
       ...r, loading: false,
       hex: map[r.algo],
@@ -195,16 +241,52 @@ export class HashComponent {
     })));
   }
 
+  async selectFile(fileInput: HTMLInputElement) {
+    this.hashError.set('');
+    try {
+      const selected = await open({ multiple: false });
+      if (typeof selected === 'string') {
+        await this.computeFileWithRust(selected);
+        return;
+      }
+    } catch {
+      // Browser-only mode does not expose the Tauri dialog API.
+    }
+    fileInput.click();
+  }
+
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
-    const b = file.size;
-    this.fileInfo.set(`${file.name} (${b < 1024 ? b + ' B' : b < 1048576 ? (b/1024).toFixed(1) + ' KB' : (b/1048576).toFixed(2) + ' MB'})`);
+    const tauriPath = (file as File & { path?: string }).path;
+    this.fileInfo.set(`${file.name} (${formatBytes(file.size)})`);
+    if (file.size >= LARGE_HASH_THRESHOLD_BYTES && tauriPath) {
+      void this.computeFileWithRust(tauriPath);
+      return;
+    }
+    if (file.size >= LARGE_HASH_THRESHOLD_BYTES) {
+      this.hashError.set('Large file selected through browser picker; hashing in browser because no native path was available.');
+    }
     const reader = new FileReader();
     reader.onload = () => {
-      this.computeAll(reader.result as string);
+      void this.computeAll(reader.result as string);
     };
     reader.readAsText(file);
+  }
+
+  private async computeFileWithRust(path: string) {
+    this.fileInfo.set(path.split(/[\\/]/).pop() || path);
+    this.results.update(rs => rs.map(r => ({ ...r, loading: true })));
+    try {
+      const entries = await Promise.all(this.results().map(async r => [
+        r.algo,
+        await invoke<string>('hash_file', { path, algorithm: r.algo })
+      ] as const));
+      this.applyHashMap(Object.fromEntries(entries));
+    } catch (e: any) {
+      this.hashError.set('Native file hashing failed: ' + (e?.message ?? String(e)));
+      this.results.update(rs => rs.map(r => ({ ...r, loading: false })));
+    }
   }
 
   copyHash(r: HashResult) {

@@ -39,15 +39,15 @@ import { ALL_TOOLS } from '../../core/tool-catalog';
 export class ShellComponent {
   private searchService = inject(SearchService);
   private settingsService = inject(SettingsService);
+  private router = inject(Router);
 
   readonly sidebarWidth = computed(() => this.settingsService.sidebarWidth());
 
   constructor() {
-    const router = inject(Router);
     const pinnedService = inject(PinnedService);
     const historySvc = inject(HistoryService);
 
-    router.events
+    this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))
       .subscribe((e) => {
         const url = (e as NavigationEnd).urlAfterRedirects;
@@ -84,19 +84,19 @@ export class ShellComponent {
     if (mod && event.key === ',') {
       event.preventDefault();
       event.stopPropagation();
-      inject(Router).navigate(['/settings']);
+      this.router.navigate(['/settings']);
       return;
     }
 
-    // ⌘H / Ctrl+H — go home
-    // Note: uses Ctrl+Shift+H on Windows to avoid WebView2 intercepting Ctrl+H
+    // ⌘H / Ctrl+H — go home. Ctrl+Shift+H is also accepted on Windows.
+    const isHomeKey = key === 'h' || event.code === 'KeyH';
     const isHome = event.metaKey
-      ? key === 'h'
-      : event.ctrlKey && event.shiftKey && key === 'h';
+      ? isHomeKey
+      : event.ctrlKey && isHomeKey;
     if (isHome) {
       event.preventDefault();
       event.stopPropagation();
-      inject(Router).navigate(['/home']);
+      this.router.navigate(['/home']);
     }
   }
 }

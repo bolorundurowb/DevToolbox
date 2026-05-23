@@ -20,9 +20,9 @@ const NAV = [
 ];
 
 const ACCENT_COLORS: { value: AccentColor; label: string }[] = [
+  { value: '#5b3a8a', label: 'Purple'  },
   { value: '#7a2436', label: 'Maroon'  },
   { value: '#1c4a4f', label: 'Teal'    },
-  { value: '#5b3a8a', label: 'Purple'  },
   { value: '#8a6515', label: 'Gold'    },
   { value: '#2f6b35', label: 'Forest'  },
 ];
@@ -42,7 +42,7 @@ const SHORTCUTS = [
 @Component({
     selector: 'dt-settings',
     imports: [FormsModule, IconComponent, TopbarComponent],
-    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
   <dt-topbar [crumbs]="['Settings', active()]" />
