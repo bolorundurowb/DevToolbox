@@ -1,3 +1,11 @@
+<div align="center">
+  <img
+    height="150"
+    width="150"
+    src="https://raw.githubusercontent.com/bolorundurowb/dev-core-tools/refs/heads/master/assets/tool-icon.png"
+    alt="Dev Core Logo"  />
+</div>
+
 # Dev Core Tools
 
 Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 18 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
