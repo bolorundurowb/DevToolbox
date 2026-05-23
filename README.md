@@ -2,7 +2,7 @@
   <img
     height="200"
     width="200"
-    src="https://raw.githubusercontent.com/bolorundurowb/dev-core-tools/refs/heads/master/assets/tool-icon.png"
+    src="https://raw.githubusercontent.com/bolorundurowb/dev-core-tools/refs/heads/master/assets/icons/tool-icon.png"
     alt="Dev Core Logo"  />
 </div>
 

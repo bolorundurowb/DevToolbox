@@ -160,8 +160,10 @@ jobs:
           fi
 
           shopt -s globstar nullglob
-          files=(release-assets/**/*)
-
+          files=()
+          for f in release-assets/**/*; do
+            [[ -f "$f" ]] && files+=("$f")
+          done
           if [ "${#files[@]}" -eq 0 ]; then
             echo "::error::No installer artifacts were downloaded."
             exit 1
