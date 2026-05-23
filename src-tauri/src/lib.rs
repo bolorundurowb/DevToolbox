@@ -22,6 +22,8 @@ pub fn run() {
             commands::compute_hmac,
             commands::bcrypt_hash,
             commands::bcrypt_verify,
+            commands::get_display_name,
+            commands::get_system_info,
         ])
         .setup(|_app| {
             // macOS: restore window appearance after transparent titlebar

@@ -1,4 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type Density = 'comfortable' | 'compact';
@@ -53,6 +54,7 @@ export interface AppSettings {
   showPinnedBar: boolean;
   trackHistory: boolean;
   maxHistory: number;
+  displayName: string;
 }
 
 const DEFAULTS: AppSettings = {
@@ -71,9 +73,16 @@ const DEFAULTS: AppSettings = {
   showPinnedBar: true,
   trackHistory: true,
   maxHistory: 25,
+  displayName: '',
 };
 
 const STORAGE_KEY = 'dev-core-tools-settings';
+const DEFAULT_DISPLAY_NAME = 'Chief';
+
+function cleanDisplayName(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  return value.trim().replace(/\s+/g, ' ').slice(0, 60);
+}
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
@@ -84,6 +93,7 @@ export class SettingsService {
   readonly accent = computed(() => this._settings().accent);
   readonly density = computed(() => this._settings().density);
   readonly sidebarWidth = computed(() => this._settings().sidebarWidth);
+  readonly displayName = computed(() => cleanDisplayName(this._settings().displayName) || DEFAULT_DISPLAY_NAME);
 
   readonly effectiveTheme = computed<'light' | 'dark'>(() => {
     const t = this._settings().theme;
@@ -116,9 +126,23 @@ export class SettingsService {
   update(partial: Partial<AppSettings>): void {
     this._settings.update(s => {
       const next = { ...s, ...partial };
+      if ('displayName' in partial) {
+        next.displayName = cleanDisplayName(partial.displayName);
+      }
       this.persist(next);
       return next;
     });
+  }
+
+  async hydrateDisplayNameFromSystem(force = false): Promise<void> {
+    if (!force && cleanDisplayName(this._settings().displayName)) return;
+
+    try {
+      const name = cleanDisplayName(await invoke<string | null>('get_display_name'));
+      if (name) this.update({ displayName: name });
+    } catch {
+      // Browser/dev-server mode cannot access the OS username. The greeting fallback covers this.
+    }
   }
 
   resetToDefaults(): void {

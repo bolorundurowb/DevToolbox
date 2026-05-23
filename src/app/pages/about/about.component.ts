@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { open } from '@tauri-apps/plugin-shell';
 import { IconComponent } from '../../core/icon.component';
 import { SettingsService } from '../../core/services/settings.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
@@ -68,11 +69,19 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
               </div>
               <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">Click "Check for updates" to view the latest release on GitHub.</p>
             </div>
-            <button (click)="checkForUpdates()"
+            <button (click)="checkForUpdates()" [disabled]="checkingUpdates()"
               style="padding:7px 14px;border-radius:7px;background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui);white-space:nowrap;flex-shrink:0">
-              Check for updates
+              {{ checkingUpdates() ? 'Opening…' : 'Check for updates' }}
             </button>
           </div>
+          @if (updateMessage()) {
+            <div
+              style="margin-top:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-ui)"
+              [style.color]="updateError() ? '#c0392b' : 'var(--text-muted)'"
+            >
+              {{ updateMessage() }}
+            </div>
+          }
         </div>
 
         <!-- Update preferences -->
@@ -127,6 +136,9 @@ export class AboutComponent {
   private svc     = inject(SettingsService);
 
   readonly nav = NAV;
+  readonly checkingUpdates = signal(false);
+  readonly updateMessage = signal('');
+  readonly updateError = signal(false);
 
   readonly platform = navigator.platform.startsWith('Win') ? 'Windows'
                     : navigator.platform.startsWith('Mac') ? 'macOS'
@@ -158,7 +170,19 @@ export class AboutComponent {
     this.svc.update({ [key]: !this.svc.settings()[key] } as any);
   }
 
-  checkForUpdates(): void {
-    window.open(GITHUB_RELEASES_URL, '_blank', 'noopener,noreferrer');
+  async checkForUpdates(): Promise<void> {
+    this.checkingUpdates.set(true);
+    this.updateMessage.set('');
+    this.updateError.set(false);
+
+    try {
+      await open(GITHUB_RELEASES_URL);
+      this.updateMessage.set('Opened the latest GitHub release in your browser.');
+    } catch (err) {
+      this.updateError.set(true);
+      this.updateMessage.set(err instanceof Error ? err.message : 'Could not open the releases page.');
+    } finally {
+      this.checkingUpdates.set(false);
+    }
   }
 }

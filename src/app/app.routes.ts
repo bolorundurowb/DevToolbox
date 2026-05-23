@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell.component';
+import { welcomeGuard } from './core/guards/welcome.guard';
 
 export const routes: Routes = [
   // First-run / welcome — no shell, no sidebar
@@ -12,6 +13,7 @@ export const routes: Routes = [
   {
     path: '',
     component: ShellComponent,
+    canActivate: [welcomeGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       {

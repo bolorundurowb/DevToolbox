@@ -1,11 +1,37 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
+import { invoke } from '@tauri-apps/api/core';
 import { IconComponent } from '../../core/icon.component';
+import { SettingsService } from '../../core/services/settings.service';
+
+interface SystemInfo {
+  os: string;
+  arch: string;
+}
+
+function formatOs(os: string): string {
+  const normalized = os.toLowerCase();
+  if (normalized === 'windows') return 'Windows';
+  if (normalized === 'macos' || normalized === 'darwin') return 'macOS';
+  if (normalized === 'linux') return 'Linux';
+  if (normalized === 'ios') return 'iOS';
+  if (normalized === 'android') return 'Android';
+  return os || 'Unknown OS';
+}
+
+function formatArch(arch: string): string {
+  const normalized = arch.toLowerCase();
+  if (['x86_64', 'amd64'].includes(normalized)) return 'x64';
+  if (['aarch64', 'arm64'].includes(normalized)) return 'ARM64';
+  if (normalized === 'x86') return 'x86';
+  return arch || 'Unknown CPU';
+}
 
 @Component({
   selector: 'dt-first-run',
-  imports: [IconComponent],
+  imports: [FormsModule, IconComponent],
   template: `
     <div
       style="
@@ -50,11 +76,37 @@ import { IconComponent } from '../../core/icon.component';
 
         <!-- Subtitle -->
         <p
-          style="margin:0 0 32px; font-size:14px; color:var(--text-muted); line-height:1.6; font-family:var(--font-ui);"
+          style="margin:0 0 22px; font-size:14px; color:var(--text-muted); line-height:1.6; font-family:var(--font-ui);"
         >
           30 developer utilities in one app — JSON, encoding, hashing, images,
           and more. Everything runs locally, no internet required.
         </p>
+
+        <div style="text-align:left; margin:0 0 28px;">
+          <label style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px; font-family:var(--font-ui);">
+            What should we call you?
+          </label>
+          <input
+            [(ngModel)]="displayName"
+            [placeholder]="placeholderName"
+            maxlength="60"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              border:1px solid var(--border);
+              border-radius:9px;
+              background:var(--surface);
+              color:var(--text);
+              font-size:14px;
+              padding:10px 12px;
+              outline:none;
+              font-family:var(--font-ui);
+            "
+          />
+          <div style="font-size:11.5px; color:var(--text-faint); margin-top:6px; font-family:var(--font-ui);">
+            Leave it blank and we will use a friendly fallback.
+          </div>
+        </div>
 
         <!-- Feature cards -->
         <div
@@ -160,63 +212,70 @@ import { IconComponent } from '../../core/icon.component';
           </div>
         </div>
 
-        <!-- CTA buttons -->
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <button
-            (click)="exploreTools()"
-            style="
-              display:flex; align-items:center; justify-content:center; gap:8px;
-              width:100%; padding:12px 20px;
-              border-radius:9px;
-              background:var(--teal);
-              color:#fff;
-              font-size:14px; font-weight:600;
-              border:none; cursor:pointer;
-              font-family:var(--font-ui);
-              transition:opacity 0.15s;
-            "
-          >
-            <dt-icon name="rocket" [size]="15" [color]="'#fff'" />
-            Explore tools
-          </button>
-
-          <button
-            style="
-              display:flex; align-items:center; justify-content:center; gap:8px;
-              width:100%; padding:11px 20px;
-              border-radius:9px;
-              background:transparent;
-              color:var(--text-muted);
-              font-size:13.5px; font-weight:500;
-              border:1px solid var(--border);
-              cursor:pointer;
-              font-family:var(--font-ui);
-              transition:border-color 0.15s, color 0.15s;
-            "
-          >
-            <dt-icon
-              name="download"
-              [size]="14"
-              [color]="'var(--text-faint)'"
-            />
-            Import from Postman / VS Code
-          </button>
-        </div>
+        <button
+          (click)="exploreTools()"
+          style="
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            width:100%; padding:12px 20px;
+            border-radius:9px;
+            background:var(--teal);
+            color:#fff;
+            font-size:14px; font-weight:600;
+            border:none; cursor:pointer;
+            font-family:var(--font-ui);
+            transition:opacity 0.15s;
+          "
+        >
+          <dt-icon name="rocket" [size]="15" [color]="'#fff'" />
+          Explore tools
+        </button>
 
         <!-- Version footer -->
         <div
           style="margin-top:28px; font-size:11.5px; color:var(--text-faint); font-family:var(--font-mono);"
         >
-          v1.0.0 &middot; macOS &middot; Apple Silicon
+          v1.0.0 &middot; {{ platformLabel }}
         </div>
       </div>
     </div>
   `,
 })
-export class FirstRunComponent {
+export class FirstRunComponent implements OnInit {
   private router = inject(Router);
+  private settings = inject(SettingsService);
+
+  displayName = '';
+  platformLabel = this.browserPlatformLabel();
+  readonly placeholderName = 'Chief';
+
+  async ngOnInit(): Promise<void> {
+    this.displayName = this.settings.settings().displayName;
+    await Promise.all([
+      this.settings.hydrateDisplayNameFromSystem(),
+      this.hydrateSystemInfo(),
+    ]);
+    if (!this.displayName) this.displayName = this.settings.settings().displayName;
+  }
+
+  private async hydrateSystemInfo(): Promise<void> {
+    try {
+      const info = await invoke<SystemInfo>('get_system_info');
+      this.platformLabel = `${formatOs(info.os)} · ${formatArch(info.arch)}`;
+    } catch {
+      this.platformLabel = this.browserPlatformLabel();
+    }
+  }
+
+  private browserPlatformLabel(): string {
+    const platform = navigator.platform || 'Unknown platform';
+    if (platform.startsWith('Win')) return 'Windows';
+    if (platform.startsWith('Mac')) return 'macOS';
+    if (platform.startsWith('Linux')) return 'Linux';
+    return platform;
+  }
 
   exploreTools(): void {
+    this.settings.update({ displayName: this.displayName });
     try {
       localStorage.setItem('dev-core-tools-welcomed', '1');
     } catch {

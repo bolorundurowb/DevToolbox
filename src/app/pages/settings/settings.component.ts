@@ -70,6 +70,26 @@ const SHORTCUTS = [
         <!-- ══ GENERAL ══════════════════════════════════════════════════ -->
         @if (active() === 'General') {
           <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Profile</h2>
+            <div style="display:flex;align-items:flex-end;gap:10px">
+              <div style="flex:1">
+                <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;font-family:var(--font-ui)">Display name</label>
+                <input [(ngModel)]="displayNameProxy" (ngModelChange)="setDisplayName($event)" maxlength="60" placeholder="Chief"
+                  style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--surface);color:var(--text);outline:none;font-family:var(--font-ui)" />
+              </div>
+              <button (click)="useSystemName()"
+                style="height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface-muted);color:var(--text);font-size:12.5px;font-weight:500;font-family:var(--font-ui);cursor:pointer;white-space:nowrap">
+                Use system name
+              </button>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:8px;font-family:var(--font-ui)">
+              Used in the Home greeting. Blank falls back to “Chief”.
+            </div>
+          </div>
+
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <div style="margin-bottom:28px">
             <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">On launch</h2>
             <div style="display:flex;flex-direction:column;gap:14px">
               @for (row of launchToggles; track row.key) {
@@ -373,6 +393,7 @@ export class SettingsComponent {
   readonly importOk        = signal(false);
 
   maxHistoryProxy = this.svc.settings().maxHistory;
+  displayNameProxy = this.svc.settings().displayName;
 
   getBool(key: string): boolean {
     return !!(this.svc.settings() as unknown as Record<string, unknown>)[key];
@@ -389,6 +410,12 @@ export class SettingsComponent {
 
   setTheme(theme: Theme): void { this.svc.update({ theme }); }
   setAccent(accent: AccentColor): void { this.svc.update({ accent }); }
+  setDisplayName(displayName: string): void { this.svc.update({ displayName }); }
+
+  async useSystemName(): Promise<void> {
+    await this.svc.hydrateDisplayNameFromSystem(true);
+    this.displayNameProxy = this.svc.settings().displayName;
+  }
 
   toggle(key: string): void {
     const cur = (this.svc.settings() as unknown as Record<string, unknown>)[key];

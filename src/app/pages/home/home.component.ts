@@ -4,6 +4,7 @@ import { IconComponent } from '../../core/icon.component';
 import { PinnedService } from '../../core/services/pinned.service';
 import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
     selector: 'dt-home',
@@ -167,7 +168,7 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
           <!-- Greeting -->
           <div style="margin-bottom:28px;">
             <h1 style="margin:0 0 6px; font-size:22px; font-weight:650; color:var(--text); letter-spacing:-0.02em; line-height:1.2; font-family:var(--font-ui);">
-              Good {{ greeting() }}, Winner.
+              Good {{ greeting() }}, {{ displayName() }}.
             </h1>
             <p style="margin:0; font-size:13.5px; color:var(--text-muted); font-family:var(--font-ui);">
               {{ totalTools }} tools across {{ categories.length }} categories &middot; everything runs offline.
@@ -255,9 +256,11 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
 export class HomeComponent {
   private router = inject(Router);
   private pinnedService = inject(PinnedService);
+  private settingsService = inject(SettingsService);
 
   readonly categories = CATEGORIES;
   readonly totalTools = CATEGORIES.reduce((n, c) => n + c.tools.length, 0);
+  readonly displayName = this.settingsService.displayName;
 
   readonly greeting = computed(() => {
     const hour = new Date().getHours();
@@ -271,6 +274,10 @@ export class HomeComponent {
       .map(id => TOOL_BY_ID[id])
       .filter(Boolean)
   );
+
+  constructor() {
+    void this.settingsService.hydrateDisplayNameFromSystem();
+  }
 
   isPinned(id: string): boolean {
     return this.pinnedService.pinned().includes(id);
