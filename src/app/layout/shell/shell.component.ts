@@ -30,7 +30,7 @@ import { ALL_TOOLS } from '../../core/tool-catalog';
         <!-- Main content area -->
         <div class="flex flex-col flex-1 min-w-0 overflow-hidden relative">
           <!-- Router outlet fills the main area -->
-          <div class="flex-1 overflow-auto">
+          <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
             <router-outlet />
           </div>
         </div>
