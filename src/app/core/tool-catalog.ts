@@ -62,7 +62,8 @@ export const CATEGORIES: Category[] = [
       { id: 'img-resize',  name: 'Image Resizer',   icon: 'resize',  desc: 'Batch, presets, aspect-lock',    catId: 'image', catName: 'Images', route: '/tools/img-resizer',    keywords: ['image', 'resize', 'scale', 'dimensions'] },
       { id: 'img-crop',    name: 'Image Cropper',   icon: 'crop',    desc: 'Manual + smart crop',            catId: 'image', catName: 'Images', route: '/tools/img-cropper',    keywords: ['image', 'crop', 'trim', 'cut'] },
       { id: 'svg-opt',     name: 'SVG Optimizer',   icon: 'image',   desc: 'Strip metadata, shrink paths',   catId: 'image', catName: 'Images', route: '/tools/svg-optimizer',  keywords: ['svg', 'optimize', 'compress', 'svgo'] },
-      { id: 'color',       name: 'Color Tools',     icon: 'palette', desc: 'Convert, pick, contrast',        catId: 'image', catName: 'Images', route: '/tools/color-tools',    keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch', 'picker'] },
+      { id: 'color',         name: 'Color Tools',              icon: 'palette', desc: 'Convert, pick, contrast',                    catId: 'image', catName: 'Images', route: '/tools/color-tools',    keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch', 'picker'] },
+      { id: 'palette-gen',  name: 'Colour Palette Generator', icon: 'palette', desc: 'Tetradic, triadic, complementary & more',     catId: 'image', catName: 'Images', route: '/tools/color-palette',  keywords: ['color', 'palette', 'harmony', 'tetradic', 'triadic', 'complementary', 'analogous', 'monochromatic', 'split', 'tints', 'shades', 'hsl', 'generator'] },
     ]
   },
   {

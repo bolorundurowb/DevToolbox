@@ -132,6 +132,10 @@ export const routes: Routes = [
         loadComponent: () => import('./tools/color-tools/color-tools.component').then(m => m.ColorToolsComponent),
       },
       {
+        path: 'tools/color-palette',
+        loadComponent: () => import('./tools/color-palette/color-palette.component').then(m => m.ColorPaletteComponent),
+      },
+      {
         path: 'tools/cron',
         loadComponent: () => import('./tools/cron/cron.component').then(m => m.CronComponent),
       },
