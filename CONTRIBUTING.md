@@ -1,6 +1,6 @@
-# Contributing to DevToolbox
+# Contributing to Dev Core Tools
 
-Thanks for helping improve DevToolbox. This project is a local-first desktop toolkit built with Angular, Tauri, and Rust, so contributions should keep the app fast, private, and easy to use offline.
+Thanks for helping improve Dev Core Tools. This project is a local-first desktop toolkit built with Angular, Tauri, and Rust, so contributions should keep the app fast, private, and easy to use offline.
 
 ## Getting Started
 
@@ -80,14 +80,14 @@ When adding a new utility:
 
 Use the docs this way:
 
-- `README.md` explains what DevToolbox is and how to get started quickly.
+- `README.md` explains what Dev Core Tools is and how to get started quickly.
 - `CONTRIBUTING.md` explains how to work on the project.
 
 Keep documentation concise, current, and consistent with the scripts in `package.json`.
 
 ## Security and Privacy
 
-DevToolbox is intended for local developer workflows. Treat pasted text, tokens, certificates, keys, and images as sensitive data.
+Dev Core Tools is intended for local developer workflows. Treat pasted text, tokens, certificates, keys, and images as sensitive data.
 
 - Do not log secrets or file contents unnecessarily.
 - Do not add analytics or remote APIs without explicit project approval.

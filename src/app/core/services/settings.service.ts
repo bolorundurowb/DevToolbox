@@ -73,7 +73,7 @@ const DEFAULTS: AppSettings = {
   maxHistory: 25,
 };
 
-const STORAGE_KEY = 'devtoolbox-settings';
+const STORAGE_KEY = 'dev-core-tools-settings';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {

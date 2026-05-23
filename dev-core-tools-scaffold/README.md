@@ -1,6 +1,6 @@
-# DevToolbox Nested Angular Scaffold
+# Dev Core Tools Nested Angular Scaffold
 
-The active DevToolbox application and contributor documentation live at the repository root.
+The active Dev Core Tools application and contributor documentation live at the repository root.
 
 - Project overview: [`../README.md`](../README.md)
 - Contribution guide: [`../CONTRIBUTING.md`](../CONTRIBUTING.md)

@@ -749,7 +749,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "devtoolbox"
+name = "dev-core-tools"
 version = "1.0.0"
 dependencies = [
  "base64 0.22.1",

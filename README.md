@@ -1,6 +1,6 @@
-# DevToolbox
+# Dev Core Tools
 
-DevToolbox is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 18 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
+Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 18 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
 
 The app is designed for common "paste, inspect, convert, generate" tasks without sending data to a remote service.
 
@@ -14,15 +14,15 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 
 ## Tool Categories
 
-| Category | Examples |
-| --- | --- |
-| Text & Code | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester |
-| Encoding | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII conversion |
-| Hashing & Crypto | Hash generator, bcrypt, UUIDs, password generator, HMAC, RSA keys, certificates, AES |
-| Images | Converter, resizer, cropper, SVG optimizer, color tools |
-| Web & Network | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL to code, OpenAPI viewer |
-| Data Transform | CSV/JSON/XML, JSON/TOML, JSON Schema generation |
-| Utilities | Unit converter, number base converter, mock data generator, string escaper |
+| Category         | Examples                                                                                   |
+|------------------|--------------------------------------------------------------------------------------------|
+| Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester        |
+| Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII conversion                     |
+| Hashing & Crypto | Hash generator, bcrypt, UUIDs, password generator, HMAC, RSA keys, certificates, AES       |
+| Images           | Converter, resizer, cropper, SVG optimizer, color tools                                    |
+| Web & Network    | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL to code, OpenAPI viewer |
+| Data Transform   | CSV/JSON/XML, JSON/TOML, JSON Schema generation                                            |
+| Utilities        | Unit converter, number base converter, mock data generator, string escaper                 |
 
 ## Tech Stack
 
@@ -75,7 +75,7 @@ Build outputs are written under `src-tauri/target/release/bundle/`.
 ## Project Layout
 
 ```text
-DevToolbox/
+Dev Core Tools/
 ├── src/                 Angular application
 │   ├── app/core/        Tool catalog, shared icons, and services
 │   ├── app/layout/      Shell, sidebar, topbar, and command palette
@@ -92,4 +92,4 @@ Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for set
 
 ## License
 
-DevToolbox is released under the MIT license.
+Dev Core Tools is released under the MIT license.

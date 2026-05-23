@@ -383,7 +383,7 @@ export class SettingsComponent {
   readonly launchToggles: { key: string; label: string; desc: string }[] = [
     { key: 'openLastTool',     label: 'Open last used tool',   desc: 'Resume where you left off' },
     { key: 'showReleaseNotes', label: 'Show release notes',    desc: 'Display what\'s new after an update' },
-    { key: 'startWithSystem',  label: 'Start with system',     desc: 'Launch DevToolbox at login' },
+    { key: 'startWithSystem',  label: 'Start with system',     desc: 'Launch Dev Core Tools at login' },
   ];
 
   readonly updateToggles: { key: string; label: string; desc: string }[] = [
@@ -458,7 +458,7 @@ export class SettingsComponent {
     const blob = new Blob([this.svc.exportJson()], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = 'devtoolbox-settings.json'; a.click();
+    a.href = url; a.download = 'dev-core-tools-settings.json'; a.click();
     URL.revokeObjectURL(url);
   }
 

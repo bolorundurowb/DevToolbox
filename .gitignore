@@ -43,4 +43,4 @@ Thumbs.db
 
 src-tauri/target
 .vscode/
-devtoolbox/.vscode/
+dev-core-tools-scaffold/.vscode/

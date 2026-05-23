@@ -50,7 +50,7 @@ const NAV = [
             <span style="color:#fff;font-size:40px;font-weight:700;line-height:1;font-family:var(--font-ui)">D</span>
           </div>
           <div style="padding-top:8px">
-            <h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-ui)">DevToolbox</h1>
+            <h1 style="margin:0 0 4px;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-ui)">Dev Core Tools</h1>
             <p style="margin:0 0 10px;font-size:13.5px;color:var(--text-muted);font-family:var(--font-ui)">42 developer utilities, all offline.</p>
             <div style="font-size:12px;color:var(--text-faint);font-family:var(--font-mono);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;display:inline-block">
               v1.0.0 &middot; {{ platform }} &middot; {{ arch }}
@@ -112,7 +112,7 @@ const NAV = [
 
         <!-- Footer -->
         <div style="font-size:11.5px;color:var(--text-faint);font-family:var(--font-mono);padding:14px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">
-          Released under the MIT License &middot; &copy; 2026 DevToolbox contributors
+          Released under the MIT License &middot; &copy; 2026 Dev Core Tools contributors
         </div>
 
       </div>

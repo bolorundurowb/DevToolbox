@@ -7,7 +7,7 @@ export interface HistoryEntry {
   visitedAt: number;   // epoch ms
 }
 
-const STORAGE_KEY = 'devtoolbox-history';
+const STORAGE_KEY = 'dev-core-tools-history';
 
 @Injectable({ providedIn: 'root' })
 export class HistoryService {

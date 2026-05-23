@@ -1,19 +1,19 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "DevToolbox",
+  "productName": "Dev Core Tools",
   "version": "1.0.0",
-  "identifier": "com.devtoolbox.app",
+  "identifier": "com.dev-core-tools.app",
   "build": {
     "beforeDevCommand": "npm run start",
     "devUrl": "http://localhost:4200",
     "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist/devtoolbox-scaffold/browser"
+    "frontendDist": "../dist/dev-core-tools/browser"
   },
   "app": {
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "DevToolbox",
+        "title": "Dev Core Tools",
         "width": 1200,
         "height": 780,
         "minWidth": 900,
@@ -42,10 +42,10 @@
     ],
     "resources": [],
     "externalBin": [],
-    "copyright": "© 2026 DevToolbox — MIT",
+    "copyright": "© 2026 Dev Core Tools — MIT",
     "category": "DeveloperTool",
     "shortDescription": "30 local-first developer tools, one window.",
-    "longDescription": "DevToolbox brings together the 30 utilities developers reach for every day — JSON formatting, hashing, encoding, image conversion, regex testing, and more — all running completely offline.",
+    "longDescription": "Dev Core Tools brings together the 30 utilities developers reach for every day — JSON formatting, hashing, encoding, image conversion, regex testing, and more — all running completely offline.",
     "macOS": {
       "entitlements": null,
       "exceptionDomain": "",
@@ -63,7 +63,7 @@
     "updater": {
       "pubkey": "",
       "endpoints": [
-        "https://releases.devtoolbox.app/{{target}}/{{arch}}/{{current_version}}"
+        "https://releases.dev-core-tools.app/{{target}}/{{arch}}/{{current_version}}"
       ],
       "dialog": true,
       "headers": {}

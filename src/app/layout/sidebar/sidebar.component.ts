@@ -326,7 +326,7 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
           >
             <span style="color:#fff; font-size:11px; font-weight:700; line-height:1; font-family:var(--font-ui);">D</span>
           </div>
-          <span style="color:var(--text); font-size:13px; font-weight:600; letter-spacing:-0.01em; font-family:var(--font-ui);">DevToolbox</span>
+          <span style="color:var(--text); font-size:13px; font-weight:600; letter-spacing:-0.01em; font-family:var(--font-ui);">Dev Core Tools</span>
         </div>
       </div>
 

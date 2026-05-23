@@ -27,7 +27,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 let window = app.get_webview_window("main").unwrap();
-                window.set_title("DevToolbox")?;
+                window.set_title("Dev Core Tools")?;
             }
             Ok(())
         })

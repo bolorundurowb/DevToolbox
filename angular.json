@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "devtoolbox-scaffold": {
+    "dev-core-tools": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:class": {
@@ -41,7 +41,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/devtoolbox-scaffold",
+            "outputPath": "dist/dev-core-tools",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -87,10 +87,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "devtoolbox-scaffold:build:production"
+              "buildTarget": "dev-core-tools:build:production"
             },
             "development": {
-              "buildTarget": "devtoolbox-scaffold:build:development"
+              "buildTarget": "dev-core-tools:build:development"
             }
           },
           "defaultConfiguration": "development"

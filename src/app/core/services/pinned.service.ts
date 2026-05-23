@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 
 const DEFAULT_PINNED = ['json', 'base64', 'uuid', 'img-convert'];
 const DEFAULT_RECENT = ['hash', 'jwt', 'cron'];
-const STORAGE_KEY = 'devtoolbox-pinned';
+const STORAGE_KEY = 'dev-core-tools-pinned';
 
 @Injectable({ providedIn: 'root' })
 export class PinnedService {
@@ -39,7 +39,7 @@ export class PinnedService {
   recordVisit(id: string): void {
     this._recent.update(r => {
       const next = [id, ...r.filter(x => x !== id)].slice(0, 5);
-      try { localStorage.setItem('devtoolbox-recent', JSON.stringify(next)); } catch { /* ignore */ }
+      try { localStorage.setItem('dev-core-tools-recent', JSON.stringify(next)); } catch { /* ignore */ }
       return next;
     });
   }
@@ -54,7 +54,7 @@ export class PinnedService {
 
   private loadRecent(): string[] {
     try {
-      const raw = localStorage.getItem('devtoolbox-recent');
+      const raw = localStorage.getItem('dev-core-tools-recent');
       if (raw) return JSON.parse(raw);
     } catch { /* ignore */ }
     return [...DEFAULT_RECENT];
@@ -62,7 +62,7 @@ export class PinnedService {
 
   clearRecent(): void {
     this._recent.set([]);
-    try { localStorage.removeItem('devtoolbox-recent'); } catch { /* ignore */ }
+    try { localStorage.removeItem('dev-core-tools-recent'); } catch { /* ignore */ }
   }
 
   clearAll(): void {
@@ -70,7 +70,7 @@ export class PinnedService {
     this._recent.set([]);
     try {
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('devtoolbox-recent');
+      localStorage.removeItem('dev-core-tools-recent');
     } catch { /* ignore */ }
   }
 

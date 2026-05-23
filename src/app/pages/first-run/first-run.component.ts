@@ -38,7 +38,7 @@ import { IconComponent } from '../../core/icon.component';
 
         <!-- Title -->
         <h1 style="margin:0 0 10px; font-size:26px; font-weight:680; color:var(--text); letter-spacing:-0.03em; font-family:var(--font-ui);">
-          Welcome to DevToolbox
+          Welcome to Dev Core Tools
         </h1>
 
         <!-- Subtitle -->
@@ -168,7 +168,7 @@ export class FirstRunComponent {
 
   exploreTools(): void {
     try {
-      localStorage.setItem('devtoolbox-welcomed', '1');
+      localStorage.setItem('dev-core-tools-welcomed', '1');
     } catch { /* ignore */ }
     this.router.navigate(['/home']);
   }
