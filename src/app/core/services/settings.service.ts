@@ -69,7 +69,7 @@ const DEFAULTS: AppSettings = {
   autoCheckUpdates: true,
   bgDownloadUpdates: false,
   includeBeta: false,
-  sidebarWidth: 232,
+  sidebarWidth: 268,
   showPinnedBar: true,
   trackHistory: true,
   maxHistory: 25,
@@ -78,6 +78,7 @@ const DEFAULTS: AppSettings = {
 
 const STORAGE_KEY = 'dev-core-tools-settings';
 const DEFAULT_DISPLAY_NAME = 'Chief';
+const MIN_SIDEBAR_WIDTH = 268;
 
 function cleanDisplayName(value: unknown): string {
   if (typeof value !== 'string') return '';
@@ -159,6 +160,7 @@ export class SettingsService {
       const parsed = JSON.parse(raw);
       this._settings.update(s => {
         const next = { ...DEFAULTS, ...s, ...parsed };
+        next.sidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Number(next.sidebarWidth) || MIN_SIDEBAR_WIDTH);
         this.persist(next);
         return next;
       });
@@ -171,7 +173,11 @@ export class SettingsService {
   private load(): AppSettings {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+      if (raw) {
+        const loaded = { ...DEFAULTS, ...JSON.parse(raw) };
+        loaded.sidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Number(loaded.sidebarWidth) || MIN_SIDEBAR_WIDTH);
+        return loaded;
+      }
     } catch { /* ignore */ }
     return { ...DEFAULTS };
   }

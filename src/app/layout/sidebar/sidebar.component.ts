@@ -13,6 +13,7 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
       display: block;
       height: 100%;
       flex-shrink: 0;
+      overflow-x: hidden;
     }
 
     .nav-item {
@@ -20,6 +21,7 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
       align-items: center;
       gap: 8px;
       width: 100%;
+      min-width: 0;
       text-align: left;
       border: none;
       cursor: pointer;
@@ -40,6 +42,7 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
       align-items: center;
       gap: 7px;
       width: 100%;
+      min-width: 0;
       text-align: left;
       border: none;
       cursor: pointer;
@@ -75,6 +78,7 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
       align-items: center;
       gap: 7px;
       width: 100%;
+      min-width: 0;
       text-align: left;
       border: none;
       cursor: pointer;
@@ -113,6 +117,7 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
     .scrollable-cats {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       min-height: 0;
       margin-right: -4px;
       padding-right: 4px;
@@ -136,6 +141,8 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
       display: flex;
       align-items: center;
       border-radius: 6px;
+      min-width: 0;
+      overflow: hidden;
     }
     .pin-action-btn {
       flex-shrink: 0;
@@ -178,8 +185,8 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
         flex-direction: column;
         height: 100%;
         overflow: hidden;
-        width: 232px;
-        min-width: 232px;
+        width: max(var(--sidebar-width, 268px), 268px);
+        min-width: max(var(--sidebar-width, 268px), 268px);
         background: var(--surface-muted);
         border-right: 1px solid var(--border);
         font-family: var(--font-ui);

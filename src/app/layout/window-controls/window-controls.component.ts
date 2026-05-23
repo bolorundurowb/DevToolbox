@@ -34,7 +34,7 @@ function detectPlatform(): Platform {
       display: flex;
       align-items: center;
       gap: 8px;
-      min-width: 232px;
+      min-width: max(var(--sidebar-width, 268px), 268px);
       padding: 0 14px;
       color: var(--text);
       font-family: var(--font-ui);
