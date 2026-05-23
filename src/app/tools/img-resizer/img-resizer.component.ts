@@ -243,15 +243,25 @@ export class ImgResizerComponent {
     return typeof path === 'string' && path.length > 0 ? path : null;
   }
 
+  private formatFor(mimeType: string): { format: string; ext: string; mime: string } {
+    switch (mimeType) {
+      case 'image/jpeg': return { format: 'JPG', ext: 'jpg', mime: 'image/jpeg' };
+      case 'image/webp': return { format: 'WebP', ext: 'webp', mime: 'image/webp' };
+      case 'image/avif': return { format: 'AVIF', ext: 'avif', mime: 'image/avif' };
+      default:           return { format: 'PNG', ext: 'png',  mime: 'image/png'  };
+    }
+  }
+
   private async resizeImageNative(file: File, w: number, h: number, q: number): Promise<Blob | null> {
     const inputPath = this.nativePathFor(file);
     if (!inputPath || file.size < NATIVE_IMAGE_THRESHOLD_BYTES) return null;
 
+    const { format, mime } = this.formatFor(file.type);
     const result = await invoke<NativeImageResult>('convert_image', {
       options: {
         input_path: inputPath,
         output_dir: await tempDir(),
-        format: 'JPG',
+        format,
         quality: q,
         resize_width: w,
         resize_height: h,
@@ -260,7 +270,7 @@ export class ImgResizerComponent {
       },
     });
     const bytes = await readFile(result.output_path);
-    return new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' });
+    return new Blob([new Uint8Array(bytes)], { type: mime });
   }
 
   async resizeImage(file: File, w: number, h: number, q: number): Promise<Blob> {
@@ -271,6 +281,7 @@ export class ImgResizerComponent {
       // Canvas fallback keeps browser/dev-server usage working and covers native codec failures.
     }
 
+    const { mime } = this.formatFor(file.type);
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
@@ -279,7 +290,7 @@ export class ImgResizerComponent {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
         URL.revokeObjectURL(url);
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Resize failed')), 'image/jpeg', q / 100);
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Resize failed')), mime, q / 100);
       };
       img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Load failed')); };
       img.src = url;
@@ -329,13 +340,14 @@ export class ImgResizerComponent {
   async downloadItem(item: ResizeItem): Promise<void> {
     if (!item.outputBlob) return;
     const base = item.file.name.replace(/\.[^.]+$/, '');
-    const filename = `${base}_${item.outW}x${item.outH}.jpg`;
+    const { ext, mime } = this.formatFor(item.file.type);
+    const filename = `${base}_${item.outW}x${item.outH}.${ext}`;
     const bytes = new Uint8Array(await item.outputBlob.arrayBuffer());
 
     try {
       const path = await save({
         defaultPath: filename,
-        filters: [{ name: 'JPEG image', extensions: ['jpg', 'jpeg'] }],
+        filters: [{ name: `${ext.toUpperCase()} image`, extensions: [ext] }],
       });
       if (!path) return;
       await writeFile(path, bytes);
@@ -348,7 +360,7 @@ export class ImgResizerComponent {
       }
     }
 
-    const url = URL.createObjectURL(new Blob([bytes], { type: item.outputBlob.type || 'image/jpeg' }));
+    const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
