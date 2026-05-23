@@ -32,10 +32,9 @@ console.log(greet('World'));
 `;
 
 @Component({
-  selector: 'dt-tool-markdown',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-markdown',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Markdown Preview']" [toolId]="'md'" />
 
@@ -104,7 +103,7 @@ console.log(greet('World'));
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     :host { display:flex; flex-direction:column; flex:1; min-height:0; }
     .md-preview h1,.md-preview h2,.md-preview h3,.md-preview h4 { font-weight:600; letter-spacing:-0.3px; margin:1.2em 0 0.5em; color:var(--text); }
     .md-preview h1 { font-size:1.8em; border-bottom:1px solid var(--border); padding-bottom:0.3em; }
@@ -124,7 +123,7 @@ console.log(greet('World'));
     .md-preview th { background:var(--surface-muted); font-weight:600; }
     .md-preview img { max-width:100%; border-radius:6px; }
     .md-preview hr { border:none; border-top:1px solid var(--border); margin:1.5em 0; }
-  `],
+  `]
 })
 export class MarkdownComponent {
   private sanitizer = inject(DomSanitizer);

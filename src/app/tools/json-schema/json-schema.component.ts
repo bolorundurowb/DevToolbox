@@ -80,11 +80,10 @@ function countProps(schema: Record<string, unknown>, depth = 0): { props: number
 }
 
 @Component({
-  selector: 'dt-tool-json-schema',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-json-schema',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Data Transform', 'JSON Schema Generator']" [toolId]="'json-schema'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -138,7 +137,7 @@ function countProps(schema: Record<string, unknown>, depth = 0): { props: number
     </div>
   </div>
 </div>
-`,
+`
 })
 export class JsonSchemaComponent {
   input = '';

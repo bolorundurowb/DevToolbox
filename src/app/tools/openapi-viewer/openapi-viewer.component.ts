@@ -186,11 +186,10 @@ function methodColor(m: string): string {
 }
 
 @Component({
-  selector: 'dt-tool-openapi-viewer',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-openapi-viewer',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Web & Network', 'OpenAPI Viewer']" [toolId]="'openapi'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -325,7 +324,7 @@ function methodColor(m: string): string {
     </div>
   }
 </div>
-`,
+`
 })
 export class OpenapiViewerComponent {
   rawInput = '';

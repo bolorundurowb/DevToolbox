@@ -8,7 +8,7 @@
 
 # Dev Core Tools
 
-Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 18 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
+Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 21 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
 
 The app is designed for common "paste, inspect, convert, generate" tasks without sending data to a remote service.
 
@@ -34,7 +34,7 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 
 ## Tech Stack
 
-- Angular 18 and TypeScript 5.5
+- Angular 21 and TypeScript 5.9
 - Tauri v2 and Rust 1.77+
 - Tailwind CSS 3
 - Karma and Jasmine for Angular unit tests
@@ -44,7 +44,7 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 
 Prerequisites:
 
-- Node.js 20 LTS recommended
+- Node.js 20.19+, 22.12+, or 24+
 - Rust 1.77.2 or newer
 - Tauri v2 system dependencies for your platform
 - Tauri CLI v2 through Cargo or npm

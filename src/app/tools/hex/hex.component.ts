@@ -6,11 +6,10 @@ import { IconComponent } from '../../core/icon.component';
 type HexMode = 'text-to-hex' | 'hex-to-text' | 'dec-hex';
 
 @Component({
-  selector: 'dt-tool-hex',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-hex',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Encoding', 'Hex']" [toolId]="'hex'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -128,7 +127,7 @@ type HexMode = 'text-to-hex' | 'hex-to-text' | 'dec-hex';
     </div>
   }
 </div>
-`,
+`
 })
 export class HexComponent {
   mode = signal<HexMode>('text-to-hex');

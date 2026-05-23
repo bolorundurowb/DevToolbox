@@ -87,11 +87,10 @@ function rowsToSql(rows: RowData[], table = 'users'): string {
 }
 
 @Component({
-  selector: 'dt-tool-mock-data',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-mock-data',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Utilities', 'Mock Data Generator']" [toolId]="'mock-data'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -153,7 +152,7 @@ function rowsToSql(rows: RowData[], table = 'users'): string {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class MockDataComponent {
   fields: FieldConfig[] = [

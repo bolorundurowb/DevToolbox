@@ -1,5 +1,15 @@
-import { Component, signal, computed, inject, HostListener, ViewChild, ElementRef, AfterViewInit, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  signal,
+  computed,
+  inject,
+  HostListener,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  effect,
+} from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../core/icon.component';
 import { SearchService } from '../../core/services/search.service';
@@ -8,8 +18,7 @@ import type { Tool } from '../../core/tool-catalog';
 
 @Component({
   selector: 'dt-command-palette',
-  standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent],
+  imports: [RouterModule, IconComponent],
   template: `
     @if (searchService.isOpen()) {
       <!-- Backdrop -->
@@ -86,14 +95,12 @@ import type { Tool } from '../../core/tool-catalog';
             [style.border-radius.px]="4"
             [style.padding]="'2px 5px'"
             [style.font-family]="'var(--font-ui)'"
-          >Esc</kbd>
+            >Esc</kbd
+          >
         </div>
 
         <!-- Results list -->
-        <div
-          class="overflow-y-auto"
-          [style.max-height.px]="360"
-        >
+        <div class="overflow-y-auto" [style.max-height.px]="360">
           @if (searchService.results().length > 0) {
             <!-- Section label -->
             <div
@@ -104,9 +111,15 @@ import type { Tool } from '../../core/tool-catalog';
               [style.letter-spacing]="'0.8px'"
               [style.text-transform]="'uppercase'"
               [style.font-family]="'var(--font-ui)'"
-            >Tools</div>
+            >
+              Tools
+            </div>
 
-            @for (tool of searchService.results(); track tool.id; let idx = $index) {
+            @for (
+              tool of searchService.results();
+              track tool.id;
+              let idx = $index
+            ) {
               <button
                 (click)="selectTool(idx)"
                 (mouseenter)="setSelected(idx)"
@@ -114,8 +127,16 @@ import type { Tool } from '../../core/tool-catalog';
                 [style.padding]="'8px 14px'"
                 [style.border]="'none'"
                 [style.cursor]="'pointer'"
-                [style.background]="idx === searchService.selectedIndex() ? 'var(--maroon-soft)' : 'transparent'"
-                [style.color]="idx === searchService.selectedIndex() ? 'var(--maroon-ink)' : 'var(--text)'"
+                [style.background]="
+                  idx === searchService.selectedIndex()
+                    ? 'var(--maroon-soft)'
+                    : 'transparent'
+                "
+                [style.color]="
+                  idx === searchService.selectedIndex()
+                    ? 'var(--maroon-ink)'
+                    : 'var(--text)'
+                "
               >
                 <!-- Icon -->
                 <div
@@ -123,8 +144,16 @@ import type { Tool } from '../../core/tool-catalog';
                   [style.width.px]="28"
                   [style.height.px]="28"
                   [style.border-radius.px]="6"
-                  [style.background]="idx === searchService.selectedIndex() ? 'var(--maroon)' : 'var(--surface-muted)'"
-                  [style.color]="idx === searchService.selectedIndex() ? '#fff' : 'var(--text-muted)'"
+                  [style.background]="
+                    idx === searchService.selectedIndex()
+                      ? 'var(--maroon)'
+                      : 'var(--surface-muted)'
+                  "
+                  [style.color]="
+                    idx === searchService.selectedIndex()
+                      ? '#fff'
+                      : 'var(--text-muted)'
+                  "
                 >
                   <dt-icon [name]="tool.icon" [size]="14" />
                 </div>
@@ -139,7 +168,11 @@ import type { Tool } from '../../core/tool-catalog';
                   ></span>
                   <span
                     [style.font-size.px]="11.5"
-                    [style.color]="idx === searchService.selectedIndex() ? 'var(--maroon-ink)' : 'var(--text-faint)'"
+                    [style.color]="
+                      idx === searchService.selectedIndex()
+                        ? 'var(--maroon-ink)'
+                        : 'var(--text-faint)'
+                    "
                     [style.font-family]="'var(--font-ui)'"
                     class="truncate"
                   >
@@ -160,7 +193,8 @@ import type { Tool } from '../../core/tool-catalog';
                     [style.padding]="'2px 5px'"
                     [style.font-family]="'var(--font-ui)'"
                     [style.flex-shrink]="0"
-                  >↵</kbd>
+                    >↵</kbd
+                  >
                 }
               </button>
             }
@@ -173,7 +207,9 @@ import type { Tool } from '../../core/tool-catalog';
               [style.font-family]="'var(--font-ui)'"
             >
               <dt-icon name="search" [size]="24" />
-              <p [style.font-size.px]="13" [style.margin-top.px]="10">No tools found for "{{ searchService.query() }}"</p>
+              <p [style.font-size.px]="13" [style.margin-top.px]="10">
+                No tools found for "{{ searchService.query() }}"
+              </p>
             </div>
           }
         </div>
@@ -189,7 +225,10 @@ import type { Tool } from '../../core/tool-catalog';
             [style.font-size.px]="11.5"
             [style.color]="'var(--text-faint)'"
             [style.font-family]="'var(--font-ui)'"
-          >{{ searchService.results().length }} result{{ searchService.results().length === 1 ? '' : 's' }}</span>
+            >{{ searchService.results().length }} result{{
+              searchService.results().length === 1 ? '' : 's'
+            }}</span
+          >
 
           <div class="flex items-center gap-3 flex-1 justify-end">
             <span
@@ -204,7 +243,8 @@ import type { Tool } from '../../core/tool-catalog';
                 [style.border-radius.px]="3"
                 [style.padding]="'1px 4px'"
                 [style.font-size.px]="10"
-              >↑↓</kbd>
+                >↑↓</kbd
+              >
               <span>navigate</span>
             </span>
             <span
@@ -219,7 +259,8 @@ import type { Tool } from '../../core/tool-catalog';
                 [style.border-radius.px]="3"
                 [style.padding]="'1px 4px'"
                 [style.font-size.px]="10"
-              >↵</kbd>
+                >↵</kbd
+              >
               <span>open</span>
             </span>
           </div>
@@ -294,6 +335,9 @@ export class CommandPaletteComponent {
     if (!query.trim()) return text;
     const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escaped})`, 'gi');
-    return text.replace(regex, '<mark style="background:var(--maroon-soft);color:var(--maroon-ink);border-radius:2px;padding:0 1px;">$1</mark>');
+    return text.replace(
+      regex,
+      '<mark style="background:var(--maroon-soft);color:var(--maroon-ink);border-radius:2px;padding:0 1px;">$1</mark>',
+    );
   }
 }

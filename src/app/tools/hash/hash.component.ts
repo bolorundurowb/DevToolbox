@@ -85,11 +85,10 @@ interface HashResult {
 }
 
 @Component({
-  selector: 'dt-tool-hash',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-hash',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Crypto', 'Hash']" [toolId]="'hash'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -155,7 +154,7 @@ interface HashResult {
     }
   </div>
 </div>
-`,
+`
 })
 export class HashComponent {
   input = '';

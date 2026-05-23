@@ -16,10 +16,9 @@ const DIALECT_LABELS: Record<SqlDialect, string> = {
 const SAMPLE_SQL = `SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count, SUM(o.total) AS total_spent FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE u.created_at > '2024-01-01' AND u.active = 1 GROUP BY u.id, u.name, u.email HAVING COUNT(o.id) > 0 ORDER BY total_spent DESC LIMIT 100;`;
 
 @Component({
-  selector: 'dt-tool-sql',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-sql',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'SQL Formatter']" [toolId]="'sql'" />
 
@@ -115,7 +114,7 @@ const SAMPLE_SQL = `SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count, SU
       </div>
     </div>
   `,
-  styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`],
+    styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`]
 })
 export class SqlComponent {
   inputVal = signal('');

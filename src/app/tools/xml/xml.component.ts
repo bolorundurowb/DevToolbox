@@ -58,10 +58,9 @@ function validateXml(xml: string): string {
 }
 
 @Component({
-  selector: 'dt-tool-xml',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-xml',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'XML Formatter']" [toolId]="'xml'" />
 
@@ -149,7 +148,7 @@ function validateXml(xml: string): string {
       </div>
     </div>
   `,
-  styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`],
+    styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`]
 })
 export class XmlComponent {
   inputVal = signal('');

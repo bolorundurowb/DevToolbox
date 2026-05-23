@@ -19,10 +19,9 @@ const SAMPLES: Record<BeautifyMode, string> = {
 };
 
 @Component({
-  selector: 'dt-tool-js-beautify',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-js-beautify',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Code Beautifier']" [toolId]="'js'" />
 
@@ -113,7 +112,7 @@ const SAMPLES: Record<BeautifyMode, string> = {
       </div>
     </div>
   `,
-  styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`],
+    styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`]
 })
 export class JsBeautifyComponent {
   inputVal = signal('');

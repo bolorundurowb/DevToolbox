@@ -126,11 +126,10 @@ function compressIpv6(addr: string): string {
 }
 
 @Component({
-  selector: 'dt-tool-ip-cidr',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-ip-cidr',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'IP / CIDR']" [toolId]="'cidr'" />
 
@@ -251,7 +250,7 @@ function compressIpv6(addr: string): string {
     }
   </div>
 </div>
-`,
+`
 })
 export class IpCidrComponent {
   inputValue = '192.168.1.0/24';

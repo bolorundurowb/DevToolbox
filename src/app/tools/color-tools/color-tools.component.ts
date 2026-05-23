@@ -105,11 +105,10 @@ function makeHarmonies(hsl: HSL) {
 }
 
 @Component({
-  selector: 'dt-tool-color-tools',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-color-tools',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'Color Tools']" [toolId]="'color'" />
 
@@ -223,7 +222,7 @@ function makeHarmonies(hsl: HSL) {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class ColorToolsComponent {
   hexInput = signal('#e63946');

@@ -99,10 +99,9 @@ function escapeHtml(s: string): string {
 }
 
 @Component({
-  selector: 'dt-tool-regex',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-regex',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Regex Tester']" [toolId]="'regex'" />
 
@@ -292,10 +291,10 @@ function escapeHtml(s: string): string {
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     :host { display:flex; flex-direction:column; flex:1; min-height:0; }
     .match-highlight { background: rgba(var(--teal-rgb, 56,178,172), 0.25); border-radius: 2px; outline: 1.5px solid var(--teal); }
-  `],
+  `]
 })
 export class RegexComponent {
   private sanitizer = inject(DomSanitizer);

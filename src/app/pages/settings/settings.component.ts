@@ -7,14 +7,13 @@ import { PinnedService } from '../../core/services/pinned.service';
 import { HistoryService } from '../../core/services/history.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 
-type Section = 'General' | 'Appearance' | 'Shortcuts' | 'Plugins' | 'History' | 'Advanced';
+type Section = 'General' | 'Appearance' | 'Shortcuts' | 'History' | 'Advanced';
 
 /* Shared nav — kept in sync with about.component.ts */
 const NAV = [
   { label: 'General',    icon: 'cog' },
   { label: 'Appearance', icon: 'palette' },
   { label: 'Shortcuts',  icon: 'key' },
-  { label: 'Plugins',    icon: 'cube' },
   { label: 'History',    icon: 'history' },
   { label: 'Advanced',   icon: 'code-bracket' },
   { label: 'About',      icon: 'information-circle', isAbout: true },
@@ -41,11 +40,10 @@ const SHORTCUTS = [
 ];
 
 @Component({
-  selector: 'dt-settings',
-  standalone: true,
-  imports: [FormsModule, IconComponent, TopbarComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-settings',
+    imports: [FormsModule, IconComponent, TopbarComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
   <dt-topbar [crumbs]="['Settings', active()]" />
 
@@ -213,32 +211,6 @@ const SHORTCUTS = [
           }
         }
 
-        <!-- ══ PLUGINS ════════════════════════════════════════════════════ -->
-        @if (active() === 'Plugins') {
-          <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Plugins</h2>
-
-          <div style="background:var(--surface-muted);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:24px;display:flex;align-items:center;gap:8px">
-            <dt-icon name="information-circle" [size]="14" color="var(--text-muted)" />
-            <span style="font-size:12.5px;color:var(--text-muted)">Plugin support is planned for a future release. All current tools are built-in.</span>
-          </div>
-
-          <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Built-in capabilities</h2>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            @for (cap of builtinCaps; track cap.name) {
-              <div style="display:flex;align-items:center;gap:12px">
-                <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center;flex-shrink:0">
-                  <dt-icon [name]="cap.icon" [size]="14" color="var(--maroon)" />
-                </div>
-                <div style="flex:1">
-                  <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">{{ cap.name }}</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-top:1px;font-family:var(--font-ui)">{{ cap.desc }}</div>
-                </div>
-                <div style="font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(28,74,79,0.1);color:var(--teal);font-weight:600;flex-shrink:0">Built-in</div>
-              </div>
-            }
-          </div>
-        }
-
         <!-- ══ HISTORY ════════════════════════════════════════════════════ -->
         @if (active() === 'History') {
           <div style="margin-bottom:28px">
@@ -362,7 +334,7 @@ const SHORTCUTS = [
     </div>
   </div>
 </div>
-`,
+`
 })
 export class SettingsComponent {
   private router      = inject(Router);
@@ -390,15 +362,6 @@ export class SettingsComponent {
     { key: 'autoCheckUpdates',  label: 'Auto-check for updates', desc: 'Check in the background periodically' },
     { key: 'bgDownloadUpdates', label: 'Background download',    desc: 'Download updates silently' },
     { key: 'includeBeta',       label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
-  ];
-
-  readonly builtinCaps = [
-    { name: '42 Developer Tools',   icon: 'braces',   desc: 'JSON, hashing, encoding, image processing and more' },
-    { name: 'Offline-first',        icon: 'lock',     desc: 'Everything runs locally — no network required' },
-    { name: 'Tauri v2 backend',     icon: 'cog',      desc: 'Native Rust commands for crypto and image processing' },
-    { name: 'Theme engine',         icon: 'palette',  desc: 'Light / dark / system with custom accent colours' },
-    { name: 'Command palette',      icon: 'search',   desc: 'Instant fuzzy search across all tools (⌘K)' },
-    { name: 'Pin & history',        icon: 'pin',      desc: 'Pin your most-used tools for quick access' },
   ];
 
   readonly active          = signal<string>('General');
@@ -465,14 +428,19 @@ export class SettingsComponent {
   importSettings(): void {
     const input = document.createElement('input');
     input.type = 'file'; input.accept = '.json,application/json';
-    input.onchange = () => {
-      const file = input.files?.[0]; if (!file) return;
+    input.onchange = (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        const ok = this.svc.importJson(reader.result as string);
-        this.importOk.set(ok);
-        this.importError.set(ok ? '' : 'Invalid settings file.');
-        setTimeout(() => { this.importOk.set(false); this.importError.set(''); }, 3000);
+      reader.onload = (ev) => {
+        try {
+          this.svc.importJson(ev.target?.result as string);
+          this.importOk.set(true);
+          this.importError.set('');
+          setTimeout(() => this.importOk.set(false), 2500);
+        } catch (err: any) {
+          this.importError.set(err?.message ?? 'Unknown error');
+        }
       };
       reader.readAsText(file);
     };

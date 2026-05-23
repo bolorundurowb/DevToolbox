@@ -9,18 +9,18 @@ const NAV = [
   { label: 'General',    icon: 'cog' },
   { label: 'Appearance', icon: 'palette' },
   { label: 'Shortcuts',  icon: 'key' },
-  { label: 'Plugins',    icon: 'cube' },
   { label: 'History',    icon: 'history' },
   { label: 'Advanced',   icon: 'code-bracket' },
   { label: 'About',      icon: 'information-circle' },
 ];
 
+const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/releases/latest';
+
 @Component({
-  selector: 'dt-about',
-  standalone: true,
-  imports: [IconComponent, TopbarComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-about',
+    imports: [IconComponent, TopbarComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
   <dt-topbar [crumbs]="['Settings', 'About']" />
 
@@ -64,11 +64,12 @@ const NAV = [
             <div style="flex:1">
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
                 <dt-icon name="arrow-path" [size]="14" color="var(--teal)" />
-                <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">Up to date &middot; v1.0.0</span>
+                <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">Current version &middot; v1.0.0</span>
               </div>
-              <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">You're on the latest version.</p>
+              <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">Click "Check for updates" to view the latest release on GitHub.</p>
             </div>
-            <button style="padding:7px 14px;border-radius:7px;background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui);white-space:nowrap;flex-shrink:0">
+            <button (click)="checkForUpdates()"
+              style="padding:7px 14px;border-radius:7px;background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui);white-space:nowrap;flex-shrink:0">
               Check for updates
             </button>
           </div>
@@ -119,7 +120,7 @@ const NAV = [
     </div>
   </div>
 </div>
-`,
+`
 })
 export class AboutComponent {
   private router  = inject(Router);
@@ -139,7 +140,7 @@ export class AboutComponent {
   ];
 
   readonly credits = [
-    { label: 'Framework', value: 'Angular 18' },
+    { label: 'Framework', value: 'Angular 20' },
     { label: 'Desktop',   value: 'Tauri v2'   },
     { label: 'Icons',     value: 'Custom SVG set' },
     { label: 'Build',     value: 'Vite + esbuild' },
@@ -154,6 +155,10 @@ export class AboutComponent {
   }
 
   togglePref(key: 'autoCheckUpdates' | 'bgDownloadUpdates' | 'includeBeta'): void {
-    this.svc.update({ [key]: !this.svc.settings()[key] });
+    this.svc.update({ [key]: !this.svc.settings()[key] } as any);
+  }
+
+  checkForUpdates(): void {
+    window.open(GITHUB_RELEASES_URL, '_blank', 'noopener,noreferrer');
   }
 }

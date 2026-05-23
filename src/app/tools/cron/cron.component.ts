@@ -38,11 +38,10 @@ function describeCronField(field: string, type: string): string {
 }
 
 @Component({
-  selector: 'dt-tool-cron',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-cron',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'Cron Parser']" [toolId]="'cron'" />
 
@@ -169,7 +168,7 @@ function describeCronField(field: string, type: string): string {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class CronComponent {
   expression = '0 9 * * 1-5';

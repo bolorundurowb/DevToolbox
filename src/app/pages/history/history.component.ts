@@ -5,10 +5,9 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { HistoryService, toolById } from '../../core/services/history.service';
 
 @Component({
-  selector: 'dt-history',
-  standalone: true,
-  imports: [IconComponent, TopbarComponent],
-  styles: [`
+    selector: 'dt-history',
+    imports: [IconComponent, TopbarComponent],
+    styles: [`
     :host { display:flex; flex-direction:column; flex:1; min-height:0; }
 
     .entry-row {
@@ -81,7 +80,7 @@ import { HistoryService, toolById } from '../../core/services/history.service';
       color: #b91c1c;
     }
   `],
-  template: `
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
   <dt-topbar [crumbs]="['History']" />
 
@@ -175,7 +174,7 @@ import { HistoryService, toolById } from '../../core/services/history.service';
     </div>
   </div>
 </div>
-  `,
+  `
 })
 export class HistoryComponent {
   private router    = inject(Router);

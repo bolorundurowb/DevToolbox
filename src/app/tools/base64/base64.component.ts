@@ -4,11 +4,10 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
 @Component({
-  selector: 'dt-tool-base64',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-base64',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Encoding', 'Base64']" [toolId]="'base64'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -96,7 +95,7 @@ import { IconComponent } from '../../core/icon.component';
     @if (urlSafe) { <span style="color:var(--teal)">URL-safe mode</span> }
   </div>
 </div>
-`,
+`
 })
 export class Base64Component {
   mode = signal<'encode'|'decode'>('encode');

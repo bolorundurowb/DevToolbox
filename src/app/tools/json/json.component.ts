@@ -4,10 +4,9 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
 @Component({
-  selector: 'dt-tool-json',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-json',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'JSON Formatter']" [toolId]="'json'" />
 
@@ -123,7 +122,7 @@ import { IconComponent } from '../../core/icon.component';
       </div>
     </div>
   `,
-  styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`],
+    styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`]
 })
 export class JsonComponent {
   inputVal = signal('');

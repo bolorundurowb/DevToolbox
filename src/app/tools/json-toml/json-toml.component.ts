@@ -139,11 +139,10 @@ function tomlToJson(text: string): unknown {
 }
 
 @Component({
-  selector: 'dt-tool-json-toml',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-json-toml',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Data Transform', 'JSON ↔ TOML']" [toolId]="'json-toml'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -192,7 +191,7 @@ function tomlToJson(text: string): unknown {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class JsonTomlComponent {
   direction = signal<'json-toml' | 'toml-json'>('json-toml');

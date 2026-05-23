@@ -1,5 +1,5 @@
 import { Component, computed, inject, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -12,13 +12,7 @@ import { ALL_TOOLS } from '../../core/tool-catalog';
 
 @Component({
   selector: 'dt-shell',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    SidebarComponent,
-    CommandPaletteComponent,
-  ],
+  imports: [RouterModule, SidebarComponent, CommandPaletteComponent],
   template: `
     <div
       class="flex h-screen overflow-hidden"
@@ -49,22 +43,24 @@ export class ShellComponent {
   readonly sidebarWidth = computed(() => this.settingsService.sidebarWidth());
 
   constructor() {
-    const router        = inject(Router);
+    const router = inject(Router);
     const pinnedService = inject(PinnedService);
-    const historySvc    = inject(HistoryService);
+    const historySvc = inject(HistoryService);
 
-    router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(e => {
-      const url = (e as NavigationEnd).urlAfterRedirects;
-      const m = url.match(/\/tools\/([^?#]+)/);
-      if (m) {
-        const routePath = '/tools/' + m[1];
-        const tool = ALL_TOOLS.find(t => t.route === routePath);
-        if (tool) {
-          pinnedService.recordVisit(tool.id);   // keeps Recent (last 5)
-          historySvc.record(tool.id);           // full history with timestamps
+    router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        const url = (e as NavigationEnd).urlAfterRedirects;
+        const m = url.match(/\/tools\/([^?#]+)/);
+        if (m) {
+          const routePath = '/tools/' + m[1];
+          const tool = ALL_TOOLS.find((t) => t.route === routePath);
+          if (tool) {
+            pinnedService.recordVisit(tool.id); // keeps Recent (last 5)
+            historySvc.record(tool.id); // full history with timestamps
+          }
         }
-      }
-    });
+      });
   }
 
   @HostListener('window:keydown', ['$event'])

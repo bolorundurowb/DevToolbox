@@ -36,11 +36,10 @@ const REFERENCE_ENTITIES = [
 ];
 
 @Component({
-  selector: 'dt-tool-html-entities',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-html-entities',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Encoding', 'HTML Entities']" [toolId]="'html'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -102,7 +101,7 @@ const REFERENCE_ENTITIES = [
     </div>
   </div>
 </div>
-`,
+`
 })
 export class HtmlEntitiesComponent {
   mode = signal<'encode'|'decode'>('encode');

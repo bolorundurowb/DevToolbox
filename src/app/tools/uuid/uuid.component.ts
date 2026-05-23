@@ -31,11 +31,10 @@ type UuidVersion = 'v1' | 'v4' | 'v7' | 'ulid' | 'nanoid';
 const QUANTITY_OPTS = [1, 8, 32, 100];
 
 @Component({
-  selector: 'dt-tool-uuid',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-uuid',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Generators', 'UUID']" [toolId]="'uuid'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -134,7 +133,7 @@ const QUANTITY_OPTS = [1, 8, 32, 100];
     </div>
   </div>
 </div>
-`,
+`
 })
 export class UuidComponent {
   versions = [

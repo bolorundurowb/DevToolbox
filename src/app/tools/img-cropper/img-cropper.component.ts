@@ -13,11 +13,10 @@ const RATIO_VALUES: Record<AspectRatio, number | null> = {
 };
 
 @Component({
-  selector: 'dt-tool-img-cropper',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-img-cropper',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'Image Cropper']" [toolId]="'img-crop'" />
 
@@ -205,7 +204,7 @@ const RATIO_VALUES: Record<AspectRatio, number | null> = {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class ImgCropperComponent {
   @ViewChild('imgEl') imgElRef?: ElementRef<HTMLImageElement>;

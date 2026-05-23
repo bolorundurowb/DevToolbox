@@ -6,10 +6,9 @@ import { CATEGORIES, TOOL_BY_ID } from '../../core/tool-catalog';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 
 @Component({
-  selector: 'dt-home',
-  standalone: true,
-  imports: [RouterModule, IconComponent, TopbarComponent],
-  styles: [`
+    selector: 'dt-home',
+    imports: [RouterModule, IconComponent, TopbarComponent],
+    styles: [`
     :host {
       display: flex;
       flex-direction: column;
@@ -159,7 +158,7 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
       margin-bottom: 8px;
     }
   `],
-  template: `
+    template: `
     <div style="flex:1; display:flex; flex-direction:column; min-height:0; background:var(--bg); font-family:var(--font-ui); height:100%;">
       <dt-topbar [crumbs]="['Home']" />
       <div style="flex:1; overflow:auto; padding:28px 36px 40px;">
@@ -251,7 +250,7 @@ import { TopbarComponent } from '../../layout/topbar/topbar.component';
         </div>
       </div>
     </div>
-  `,
+  `
 })
 export class HomeComponent {
   private router = inject(Router);

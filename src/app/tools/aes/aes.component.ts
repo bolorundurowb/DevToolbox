@@ -27,12 +27,17 @@ function base64ToBytes(b64: string): Uint8Array {
   return arr;
 }
 
+function toBufferSource(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy;
+}
+
 @Component({
-  selector: 'dt-tool-aes',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-aes',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Hashing & Crypto', 'AES Encrypt/Decrypt']" [toolId]="'aes'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -129,7 +134,7 @@ function base64ToBytes(b64: string): Uint8Array {
     }
   </div>
 </div>
-`,
+`
 })
 export class AesComponent {
   tab = signal<'encrypt' | 'decrypt'>('encrypt');
@@ -162,10 +167,10 @@ export class AesComponent {
 
   private async deriveKey(salt: Uint8Array): Promise<CryptoKey> {
     const enc = new TextEncoder();
-    const rawKey = enc.encode(this.passphrase);
+    const rawKey = toBufferSource(enc.encode(this.passphrase));
     const baseKey = await crypto.subtle.importKey('raw', rawKey, 'PBKDF2', false, ['deriveKey']);
     return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt: toBufferSource(salt), iterations: 100000, hash: 'SHA-256' },
       baseKey,
       { name: 'AES-GCM', length: this.keyBits() },
       false,
@@ -174,16 +179,16 @@ export class AesComponent {
   }
 
   private async importHexKey(): Promise<CryptoKey> {
-    const bytes = hexToBytes(this.hexKey);
+    const bytes = toBufferSource(hexToBytes(this.hexKey));
     return crypto.subtle.importKey('raw', bytes, { name: 'AES-GCM', length: this.keyBits() }, false, ['encrypt', 'decrypt']);
   }
 
   private async encrypt() {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const iv = toBufferSource(crypto.getRandomValues(new Uint8Array(12)));
     let key: CryptoKey;
     let salt: Uint8Array | null = null;
     if (this.keyMode() === 'passphrase') {
-      salt = crypto.getRandomValues(new Uint8Array(16));
+      salt = toBufferSource(crypto.getRandomValues(new Uint8Array(16)));
       key = await this.deriveKey(salt);
       this.keyDetails.set(`PBKDF2 · SHA-256 · 100,000 iterations · Salt: ${bytesToHex(salt)} · IV: ${bytesToHex(iv)}`);
     } else {
@@ -191,7 +196,7 @@ export class AesComponent {
       this.keyDetails.set(`Direct hex key · IV: ${bytesToHex(iv)}`);
     }
     const enc = new TextEncoder();
-    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(this.inputText));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toBufferSource(enc.encode(this.inputText)));
     // Format: [1 byte: has_salt][16 byte salt if present][12 byte IV][ciphertext]
     const hasSalt = salt ? 1 : 0;
     const total = 1 + (salt ? 16 : 0) + 12 + ct.byteLength;
@@ -209,9 +214,9 @@ export class AesComponent {
     let off = 0;
     const hasSalt = data[off++];
     let salt: Uint8Array | null = null;
-    if (hasSalt) { salt = data.slice(off, off + 16); off += 16; }
-    const iv = data.slice(off, off + 12); off += 12;
-    const ct = data.slice(off);
+    if (hasSalt) { salt = toBufferSource(data.slice(off, off + 16)); off += 16; }
+    const iv = toBufferSource(data.slice(off, off + 12)); off += 12;
+    const ct = toBufferSource(data.slice(off));
     let key: CryptoKey;
     if (this.keyMode() === 'passphrase') {
       if (!salt) throw new Error('No salt found in ciphertext. Was this encrypted with a hex key?');

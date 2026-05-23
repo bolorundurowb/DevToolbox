@@ -16,11 +16,10 @@ interface QROptions {
 }
 
 @Component({
-  selector: 'dt-tool-qr',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-qr',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'QR Code']" [toolId]="'qr'" />
 
@@ -224,7 +223,7 @@ interface QROptions {
     </div>
   </div>
 </div>
-`,
+`
 })
 export class QrComponent {
   contentTabs: ContentTab[] = ['URL', 'Text', 'WiFi', 'vCard', 'SMS'];

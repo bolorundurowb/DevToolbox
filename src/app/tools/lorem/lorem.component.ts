@@ -84,10 +84,9 @@ function generateLorem(count: number, unit: 'words' | 'sentences' | 'paragraphs'
 }
 
 @Component({
-  selector: 'dt-tool-lorem',
-  standalone: true,
-  imports: [TopbarComponent, IconComponent, FormsModule],
-  template: `
+    selector: 'dt-tool-lorem',
+    imports: [TopbarComponent, IconComponent, FormsModule],
+    template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Lorem Ipsum']" [toolId]="'lorem'" />
 
@@ -153,7 +152,7 @@ function generateLorem(count: number, unit: 'words' | 'sentences' | 'paragraphs'
       </div>
     </div>
   `,
-  styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`],
+    styles: [`:host { display:flex; flex-direction:column; flex:1; min-height:0; }`]
 })
 export class LoremComponent {
   count = 3;

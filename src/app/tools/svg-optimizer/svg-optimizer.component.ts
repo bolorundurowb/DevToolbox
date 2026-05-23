@@ -17,11 +17,10 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
 </svg>`;
 
 @Component({
-  selector: 'dt-tool-svg-optimizer',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-svg-optimizer',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Tools', 'SVG Optimizer']" [toolId]="'svg-opt'" />
 
@@ -150,7 +149,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
     </div>
   </div>
 </div>
-`,
+`
 })
 export class SvgOptimizerComponent {
   private sanitizer = inject(DomSanitizer);

@@ -40,11 +40,10 @@ function formatNum(n: number): string {
 }
 
 @Component({
-  selector: 'dt-tool-unit-converter',
-  standalone: true,
-  imports: [FormsModule, TopbarComponent, IconComponent],
-  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-  template: `
+    selector: 'dt-tool-unit-converter',
+    imports: [FormsModule, TopbarComponent, IconComponent],
+    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+    template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
   <dt-topbar [crumbs]="['Utilities', 'Unit Converter']" [toolId]="'unit-conv'" />
   <div style="display:flex;align-items:center;gap:12px;padding:16px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
@@ -100,7 +99,7 @@ function formatNum(n: number): string {
     }
   </div>
 </div>
-`,
+`
 })
 export class UnitConverterComponent {
   tab = signal<'data' | 'time'>('data');

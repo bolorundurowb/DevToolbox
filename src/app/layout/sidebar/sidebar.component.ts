@@ -23,10 +23,9 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
 }
 
 @Component({
-  selector: 'dt-sidebar',
-  standalone: true,
-  imports: [RouterModule, IconComponent],
-  styles: [`
+    selector: 'dt-sidebar',
+    imports: [RouterModule, IconComponent],
+    styles: [`
     :host {
       display: block;
       height: 100%;
@@ -245,7 +244,7 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
       color: var(--teal);
     }
   `],
-  template: `
+    template: `
     <nav
       style="
         display: flex;
@@ -396,7 +395,7 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
                   (click)="unpinTool(tool.id)"
                   title="Unpin"
                 >
-                  <dt-icon name="x-circle" [size]="13" />
+                  <dt-icon name="pin-solid" [size]="13" />
                 </button>
               </div>
             }
@@ -521,7 +520,7 @@ function detectPlatform(): 'mac' | 'win' | 'nix' {
       <div data-tauri-drag-region style="height: 10px; flex-shrink: 0;"></div>
 
     </nav>
-  `,
+  `
 })
 export class SidebarComponent {
   private router = inject(Router);
