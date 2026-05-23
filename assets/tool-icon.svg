@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Maroon Squircle Background -->
+  <rect x="0" y="0" width="400" height="400" rx="80" ry="80" fill="#392b58" />
+
+  <!-- Cream Colored Curly Braces (Monospace-style, thicker, rounded caps) -->
+  <g fill="none" stroke="#c6ecae" stroke-width="23" stroke-linecap="round" stroke-linejoin="miter">
+    
+    <!-- Left Curly Brace { -->
+    <path d="M 150 100 
+             L 130 100 
+             A 16 16 0 0 0 114 116 
+             L 114 180 
+             L 100 200 
+             L 114 220 
+             L 114 284 
+             A 16 16 0 0 0 130 300 
+             L 150 300" />
+
+    <!-- Right Curly Brace } -->
+    <path d="M 250 100 
+             L 270 100 
+             A 16 16 0 0 1 286 116 
+             L 286 180 
+             L 300 200 
+             L 286 220 
+             L 286 284 
+             A 16 16 0 0 1 270 300 
+             L 250 300" />
+  </g>
+
+  <!-- Dark Green Dot in the Middle -->
+  <circle cx="200" cy="200" r="20" fill="#ff972d" />
+</svg>
