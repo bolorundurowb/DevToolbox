@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { invoke } from '@tauri-apps/api/core';
-import { readFile } from '@tauri-apps/plugin-fs';
+import { readFile, writeFile } from '@tauri-apps/plugin-fs';
 import { tempDir } from '@tauri-apps/api/path';
+import { save } from '@tauri-apps/plugin-dialog';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -171,6 +172,18 @@ let _nextId = 0;
           <div style="display:flex;justify-content:space-between"><span style="color:var(--teal)">Done</span><span>{{ doneItems().length }}</span></div>
         </div>
       </div>
+
+      @if (downloadMessage()) {
+        <div
+          style="border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.45;display:flex;gap:7px;align-items:flex-start"
+          [style.background]="downloadError() ? 'rgba(180,30,30,.08)' : 'var(--teal-soft)'"
+          [style.border]="downloadError() ? '1px solid rgba(180,30,30,.25)' : '1px solid rgba(28,74,79,.25)'"
+          [style.color]="downloadError() ? '#c0392b' : 'var(--teal-ink)'"
+        >
+          <dt-icon [name]="downloadError() ? 'alert-circle' : 'check-circle'" [size]="14" />
+          <span>{{ downloadMessage() }}</span>
+        </div>
+      }
     </div>
   </div>
 </div>
@@ -185,6 +198,8 @@ export class ImgResizerComponent {
   targetH: number | null = null;
   scalePercent: number | null = null;
   presets = PRESETS;
+  downloadMessage = signal('');
+  downloadError = signal(false);
 
   pendingItems() { return this.items().filter(i => i.status === 'pending'); }
   doneItems() { return this.items().filter(i => i.status === 'done'); }
@@ -301,12 +316,46 @@ export class ImgResizerComponent {
     });
   }
 
-  downloadItem(item: ResizeItem) {
+  private setDownloadMessage(message: string, isError = false): void {
+    this.downloadMessage.set(message);
+    this.downloadError.set(isError);
+    if (!isError) {
+      setTimeout(() => {
+        if (this.downloadMessage() === message) this.downloadMessage.set('');
+      }, 4000);
+    }
+  }
+
+  async downloadItem(item: ResizeItem): Promise<void> {
     if (!item.outputBlob) return;
     const base = item.file.name.replace(/\.[^.]+$/, '');
-    const url = URL.createObjectURL(item.outputBlob);
+    const filename = `${base}_${item.outW}x${item.outH}.jpg`;
+    const bytes = new Uint8Array(await item.outputBlob.arrayBuffer());
+
+    try {
+      const path = await save({
+        defaultPath: filename,
+        filters: [{ name: 'JPEG image', extensions: ['jpg', 'jpeg'] }],
+      });
+      if (!path) return;
+      await writeFile(path, bytes);
+      this.setDownloadMessage(`Saved ${filename} to ${path}.`);
+      return;
+    } catch (err) {
+      // Browser fallback for dev-server runs and environments without Tauri FS access.
+      if (String(err).trim()) {
+        this.setDownloadMessage('Native save failed; using browser download fallback.');
+      }
+    }
+
+    const url = URL.createObjectURL(new Blob([bytes], { type: item.outputBlob.type || 'image/jpeg' }));
     const a = document.createElement('a');
-    a.href = url; a.download = `${base}_${item.outW}x${item.outH}.jpg`; a.click();
-    URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    this.setDownloadMessage(`Downloaded ${filename}. Check your Downloads folder.`);
   }
 }
