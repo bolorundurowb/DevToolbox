@@ -571,8 +571,17 @@ function getClassColor(code: number): { color: string; bg: string } {
       border-bottom: 1px solid var(--border);
     }
 
-    .list {
+    /* Outer div takes all remaining height and clips; inner div scrolls inside it */
+    .list-outer {
       flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .list {
+      position: absolute;
+      inset: 0;
       overflow-y: auto;
       padding: 12px 16px;
       display: flex;
@@ -599,6 +608,8 @@ function getClassColor(code: number): { color: string; bg: string } {
       cursor: pointer;
       transition: border-color 0.15s, box-shadow 0.15s;
       overflow: hidden;
+      flex-shrink: 0;   /* never compress below natural height */
+      min-height: 72px; /* collapsed baseline so cards are always legible */
     }
 
     .code-card:hover {
@@ -807,6 +818,7 @@ function getClassColor(code: number): { color: string; bg: string } {
         </div>
       </div>
 
+      <div class="list-outer">
       <div class="list">
         @if (filtered().length === 0) {
           <div class="empty-state">
@@ -873,6 +885,7 @@ function getClassColor(code: number): { color: string; bg: string } {
             }
           </div>
         }
+      </div>
       </div>
     </div>
   `,
