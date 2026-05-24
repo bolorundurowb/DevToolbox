@@ -14,6 +14,8 @@ Dev Core Tools is a local-first desktop app that brings everyday developer utili
 
 The app is designed for common "paste, inspect, convert, generate" tasks without sending data to a remote service.
 
+> **Provenance**: This project was built with extensive assistance from AI agents. Every feature and capability has been thoroughly tested to ensure a high-quality, reliable experience.
+
 ## Highlights
 
 - 45+ tools for formatting, encoding, crypto, images, networking, data conversion, and generated test data.
