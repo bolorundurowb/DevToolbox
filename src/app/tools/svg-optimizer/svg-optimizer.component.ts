@@ -4,6 +4,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { inject } from '@angular/core';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 
 const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
   <!-- Sample SVG with metadata -->
@@ -18,7 +19,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
 
 @Component({
     selector: 'dt-tool-svg-optimizer',
-    imports: [FormsModule, TopbarComponent, IconComponent],
+    imports: [FormsModule, TopbarComponent, IconComponent, CodeEditorComponent],
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
@@ -77,9 +78,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
               <span style="background:var(--surface-muted);padding:1px 7px;border-radius:10px;font-weight:400">{{ formatSize(originalSize()) }}</span>
             }
           </div>
-          <textarea [(ngModel)]="inputSvgModel" (ngModelChange)="inputSvg.set($event)"
-            placeholder="Paste SVG code here…"
-            style="flex:1;resize:none;border:none;outline:none;padding:12px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5"></textarea>
+          <dt-code-editor language="xml" style="flex:1;min-height:0" [value]="inputSvg()" (valueChange)="inputSvg.set($event)" />
         </div>
         <div style="flex:1;min-width:0;display:flex;flex-direction:column">
           <div style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
@@ -99,7 +98,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
             }
           </div>
           @if (outputSvg()) {
-            <pre style="flex:1;overflow:auto;margin:0;padding:12px;font-family:var(--font-mono);font-size:12px;color:var(--text);background:var(--bg);line-height:1.5;white-space:pre-wrap;word-break:break-all">{{ outputSvg() }}</pre>
+            <dt-code-editor language="xml" style="flex:1;min-height:0" [value]="outputSvg()" [readOnly]="true" />
           } @else if (errorMsg()) {
             <div style="flex:1;padding:16px;font-size:12.5px;color:#e05">{{ errorMsg() }}</div>
           } @else {
@@ -155,7 +154,6 @@ export class SvgOptimizerComponent {
   private sanitizer = inject(DomSanitizer);
 
   inputSvg = signal('');
-  inputSvgModel = '';
   outputSvg = signal('');
   originalSize = signal(0);
   optimizedSize = signal(0);
@@ -189,17 +187,15 @@ export class SvgOptimizerComponent {
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   }
 
-  loadSample() { this.inputSvgModel = SAMPLE_SVG; this.inputSvg.set(SAMPLE_SVG); }
-  clearAll() { this.inputSvgModel = ''; this.inputSvg.set(''); this.outputSvg.set(''); this.errorMsg.set(''); }
+  loadSample() { this.inputSvg.set(SAMPLE_SVG); }
+  clearAll() { this.inputSvg.set(''); this.outputSvg.set(''); this.errorMsg.set(''); }
 
   onFileInput(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const text = reader.result as string;
-      this.inputSvgModel = text;
-      this.inputSvg.set(text);
+      this.inputSvg.set(reader.result as string);
     };
     reader.readAsText(file);
   }

@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 
 // Simple YAML to JSON converter (handles basic swagger files)
 function yamlToJson(yaml: string): unknown {
@@ -187,7 +188,7 @@ function methodColor(m: string): string {
 
 @Component({
     selector: 'dt-tool-openapi-viewer',
-    imports: [FormsModule, TopbarComponent, IconComponent],
+    imports: [FormsModule, TopbarComponent, IconComponent, CodeEditorComponent],
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
@@ -214,9 +215,7 @@ function methodColor(m: string): string {
         <div style="margin-top:10px;font-size:14px;font-weight:600;color:var(--text-muted)">Drop OpenAPI JSON or YAML file here</div>
         <div style="font-size:12px;color:var(--text-faint);margin-top:4px">or paste the content below</div>
       </div>
-      <textarea [(ngModel)]="rawInput" rows="12"
-        placeholder="Paste OpenAPI/Swagger JSON or YAML here…"
-        style="width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5;outline:none"></textarea>
+      <dt-code-editor language="yaml" style="flex:1;min-height:240px" [(value)]="rawInput" />
       @if (error()) {
         <div style="padding:10px 14px;background:#fee2e2;border:1px solid #fca5a5;border-radius:7px;color:#b91c1c;font-size:12.5px">{{ error() }}</div>
       }

@@ -2,22 +2,13 @@ import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IconComponent } from '../../core/icon.component';
-import { SettingsService, Theme, AccentColor } from '../../core/services/settings.service';
+import { SettingsService, Theme, AccentColor, UI_FONTS, CODE_FONTS } from '../../core/services/settings.service';
 import { PinnedService } from '../../core/services/pinned.service';
 import { HistoryService } from '../../core/services/history.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
+import { SETTINGS_NAV } from '../../shared/nav';
 
 type Section = 'General' | 'Appearance' | 'Shortcuts' | 'History' | 'Advanced';
-
-/* Shared nav — kept in sync with about.component.ts */
-const NAV = [
-  { label: 'General',    icon: 'cog' },
-  { label: 'Appearance', icon: 'palette' },
-  { label: 'Shortcuts',  icon: 'key' },
-  { label: 'History',    icon: 'history' },
-  { label: 'Advanced',   icon: 'code-bracket' },
-  { label: 'About',      icon: 'information-circle', isAbout: true },
-];
 
 const ACCENT_COLORS: { value: AccentColor; label: string }[] = [
   { value: '#5b3a8a', label: 'Purple'  },
@@ -177,7 +168,7 @@ const SHORTCUTS = [
 
           <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
 
-          <!-- Fonts (read-only) -->
+          <!-- Fonts -->
           <div>
             <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Fonts</h2>
             <div style="display:flex;flex-direction:column;gap:14px">
@@ -186,14 +177,24 @@ const SHORTCUTS = [
                   <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">UI font</div>
                   <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Used for all interface text</div>
                 </div>
-                <span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-ui)">System default</span>
+                <select [(ngModel)]="uiFontProxy" (ngModelChange)="setUiFont($event)"
+                  style="height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;font-family:var(--font-ui)">
+                  @for (f of uiFontKeys; track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
                 <div>
                   <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Code font</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Used in all editor and mono panels</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Used in editors and mono panels</div>
                 </div>
-                <span style="font-size:12.5px;color:var(--text-faint);font-family:var(--font-mono)">JetBrains Mono</span>
+                <select [(ngModel)]="codeFontProxy" (ngModelChange)="setCodeFont($event)"
+                  style="height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;font-family:var(--font-mono)">
+                  @for (f of codeFontKeys; track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
               </div>
             </div>
           </div>
@@ -362,9 +363,11 @@ export class SettingsComponent {
   private pinned      = inject(PinnedService);
   private historySvc  = inject(HistoryService);
 
-  readonly nav          = NAV;
+  readonly nav          = SETTINGS_NAV;
   readonly accentColors = ACCENT_COLORS;
   readonly shortcutGroups = SHORTCUTS;
+  readonly uiFontKeys   = Object.keys(UI_FONTS);
+  readonly codeFontKeys = Object.keys(CODE_FONTS);
 
   readonly themes: { value: Theme; label: string; icon: string }[] = [
     { value: 'light',  label: 'Light',  icon: 'eye' },
@@ -373,14 +376,11 @@ export class SettingsComponent {
   ];
 
   readonly launchToggles: { key: string; label: string; desc: string }[] = [
-    { key: 'openLastTool',     label: 'Open last used tool',   desc: 'Resume where you left off' },
-    { key: 'showReleaseNotes', label: 'Show release notes',    desc: 'Display what\'s new after an update' },
-    { key: 'startWithSystem',  label: 'Start with system',     desc: 'Launch Dev Core Tools at login' },
+    { key: 'startWithSystem', label: 'Start with system', desc: 'Launch Dev Core Tools at login' },
   ];
 
   readonly updateToggles: { key: string; label: string; desc: string }[] = [
-    { key: 'autoCheckUpdates', label: 'Auto-check for updates', desc: 'Check GitHub in the background periodically' },
-    { key: 'includeBeta',      label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
+    { key: 'includeBeta', label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
   readonly active          = signal<string>('General');
@@ -391,8 +391,10 @@ export class SettingsComponent {
   readonly importError     = signal('');
   readonly importOk        = signal(false);
 
-  maxHistoryProxy = this.svc.settings().maxHistory;
+  maxHistoryProxy  = this.svc.settings().maxHistory;
   displayNameProxy = this.svc.settings().displayName;
+  uiFontProxy      = this.svc.settings().uiFont;
+  codeFontProxy    = this.svc.settings().codeFont;
 
   getBool(key: string): boolean {
     return !!(this.svc.settings() as unknown as Record<string, unknown>)[key];
@@ -402,7 +404,7 @@ export class SettingsComponent {
     return ACCENT_COLORS.find(a => a.value === this.settings().accent)?.label ?? '';
   }
 
-  handleNav(item: { label: string; isAbout?: boolean }): void {
+  handleNav(item: { label: string; isAbout?: true }): void {
     if (item.isAbout) { this.router.navigate(['/about']); return; }
     this.active.set(item.label);
   }
@@ -410,6 +412,8 @@ export class SettingsComponent {
   setTheme(theme: Theme): void { this.svc.update({ theme }); }
   setAccent(accent: AccentColor): void { this.svc.update({ accent }); }
   setDisplayName(displayName: string): void { this.svc.update({ displayName }); }
+  setUiFont(uiFont: string): void { this.svc.update({ uiFont }); }
+  setCodeFont(codeFont: string): void { this.svc.update({ codeFont }); }
 
   async useSystemName(): Promise<void> {
     await this.svc.hydrateDisplayNameFromSystem(true);
@@ -418,7 +422,11 @@ export class SettingsComponent {
 
   toggle(key: string): void {
     const cur = (this.svc.settings() as unknown as Record<string, unknown>)[key];
-    this.svc.update({ [key]: !cur } as any);
+    if (key === 'startWithSystem') {
+      void this.svc.setStartWithSystem(!cur);
+    } else {
+      this.svc.update({ [key]: !cur } as any);
+    }
   }
 
   setMaxHistory(v: number): void { this.svc.update({ maxHistory: Number(v) }); }

@@ -6,16 +6,7 @@ import { IconComponent } from '../../core/icon.component';
 import { SettingsService } from '../../core/services/settings.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { ALL_TOOLS } from '../../core/tool-catalog';
-
-/* Shared nav definition — kept in sync with settings.component.ts */
-const NAV = [
-  { label: 'General',    icon: 'cog' },
-  { label: 'Appearance', icon: 'palette' },
-  { label: 'Shortcuts',  icon: 'key' },
-  { label: 'History',    icon: 'history' },
-  { label: 'Advanced',   icon: 'code-bracket' },
-  { label: 'About',      icon: 'information-circle' },
-];
+import { SETTINGS_NAV } from '../../shared/nav';
 
 const GITHUB_REPO = 'bolorundurowb/dev-core-tools';
 
@@ -189,7 +180,7 @@ export class AboutComponent implements OnInit {
 
   readonly toolCount   = ALL_TOOLS.length;
   readonly appVersion  = signal('…');
-  readonly nav         = NAV;
+  readonly nav         = SETTINGS_NAV;
 
   readonly updateStatus      = signal<UpdateStatus>('idle');
   readonly latestVersion     = signal('');
@@ -203,8 +194,7 @@ export class AboutComponent implements OnInit {
   readonly arch     = navigator.platform.includes('arm') || navigator.platform.includes('M1') ? 'Apple Silicon' : 'x64';
 
   readonly updatePrefs = [
-    { key: 'autoCheckUpdates' as const, label: 'Auto-check for updates', desc: 'Check GitHub in the background periodically' },
-    { key: 'includeBeta'      as const, label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
+    { key: 'includeBeta' as const, label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
   readonly credits = [
@@ -231,11 +221,11 @@ export class AboutComponent implements OnInit {
     if (label !== 'About') this.router.navigate(['/settings']);
   }
 
-  getPref(key: 'autoCheckUpdates' | 'includeBeta'): boolean {
+  getPref(key: 'includeBeta'): boolean {
     return this.svc.settings()[key];
   }
 
-  togglePref(key: 'autoCheckUpdates' | 'includeBeta'): void {
+  togglePref(key: 'includeBeta'): void {
     this.svc.update({ [key]: !this.svc.settings()[key] } as any);
   }
 

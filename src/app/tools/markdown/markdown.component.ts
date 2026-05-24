@@ -1,8 +1,8 @@
-import { Component, signal, computed, effect, inject, SecurityContext } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, signal, computed, inject } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 import { marked } from 'marked';
 
 const SAMPLE_MD = `# Hello, Markdown!
@@ -33,7 +33,7 @@ console.log(greet('World'));
 
 @Component({
     selector: 'dt-tool-markdown',
-    imports: [TopbarComponent, IconComponent, FormsModule],
+    imports: [TopbarComponent, IconComponent, CodeEditorComponent],
     template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Markdown Preview']" [toolId]="'md'" />
@@ -72,13 +72,7 @@ console.log(greet('World'));
           <div style="height:34px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-bottom:1px solid var(--border);flex-shrink:0">
             <span style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px">MARKDOWN</span>
           </div>
-          <textarea
-            style="flex:1;resize:none;border:none;outline:none;padding:14px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface);color:var(--text);min-height:0;line-height:1.6"
-            [value]="inputVal()"
-            (input)="onInput($event)"
-            placeholder="Write or paste Markdown here…"
-            spellcheck="false"
-          ></textarea>
+          <dt-code-editor language="markdown" style="flex:1;min-height:0" [value]="inputVal()" (valueChange)="inputVal.set($event); renderMarkdown($event)" />
           <div style="height:28px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-top:1px solid var(--border);flex-shrink:0;gap:6px">
             @if (inputVal().trim()) {
               <span style="font-size:11.5px;color:var(--text-faint)">{{ wordCount() }} words · {{ inputVal().split('\n').length }} lines</span>
@@ -142,13 +136,7 @@ export class MarkdownComponent {
     return this.sanitizer.bypassSecurityTrustHtml(this.rawHtml());
   });
 
-  onInput(e: Event) {
-    const val = (e.target as HTMLTextAreaElement).value;
-    this.inputVal.set(val);
-    this.renderMarkdown(val);
-  }
-
-  private async renderMarkdown(md: string) {
+  async renderMarkdown(md: string) {
     if (!md.trim()) { this.rawHtml.set(''); return; }
     try {
       const result = await marked(md, { async: true });

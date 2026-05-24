@@ -1,12 +1,12 @@
 import { Component, input, computed, inject } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IconComponent } from '../../core/icon.component';
 import { SearchService } from '../../core/services/search.service';
 import { PinnedService } from '../../core/services/pinned.service';
 
 @Component({
     selector: 'dt-topbar',
-    imports: [RouterModule, IconComponent],
+    imports: [IconComponent],
     template: `
     <header
       class="flex items-center gap-3 flex-shrink-0"

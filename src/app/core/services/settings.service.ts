@@ -2,8 +2,24 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 
 export type Theme = 'light' | 'dark' | 'system';
-export type Density = 'comfortable' | 'compact';
 export type AccentColor = '#7a2436' | '#1c4a4f' | '#5b3a8a' | '#8a6515' | '#2f6b35';
+
+/** UI font choices — key is the label stored in settings, value is the CSS font-family stack. */
+export const UI_FONTS: Record<string, string> = {
+  'System default': '',   // empty → remove override, fall back to styles.css
+  'Inter':          '"Inter", ui-sans-serif, system-ui, sans-serif',
+  'DM Sans':        '"DM Sans", ui-sans-serif, system-ui, sans-serif',
+  'Geist':          '"Geist", ui-sans-serif, system-ui, sans-serif',
+};
+
+/** Code / mono font choices. */
+export const CODE_FONTS: Record<string, string> = {
+  'JetBrains Mono': '"JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace',
+  'Fira Code':      '"Fira Code", ui-monospace, Menlo, Consolas, monospace',
+  'Cascadia Code':  '"Cascadia Code", ui-monospace, Menlo, Consolas, monospace',
+  'Source Code Pro': '"Source Code Pro", ui-monospace, Menlo, Consolas, monospace',
+  'System mono':    'ui-monospace, Menlo, Consolas, "Liberation Mono", monospace',
+};
 
 /** CSS variables to set for each accent choice — separate light and dark variants */
 const ACCENT_VARS: Record<AccentColor, {
@@ -43,14 +59,9 @@ export interface AppSettings {
   accent: AccentColor;
   uiFont: string;
   codeFont: string;
-  density: Density;
-  openLastTool: boolean;
-  showReleaseNotes: boolean;
   startWithSystem: boolean;
-  autoCheckUpdates: boolean;
   includeBeta: boolean;
   sidebarWidth: number;
-  showPinnedBar: boolean;
   trackHistory: boolean;
   maxHistory: number;
   displayName: string;
@@ -61,14 +72,9 @@ const DEFAULTS: AppSettings = {
   accent: '#5b3a8a',
   uiFont: 'System default',
   codeFont: 'JetBrains Mono',
-  density: 'comfortable',
-  openLastTool: true,
-  showReleaseNotes: false,
   startWithSystem: false,
-  autoCheckUpdates: true,
   includeBeta: false,
   sidebarWidth: 268,
-  showPinnedBar: true,
   trackHistory: true,
   maxHistory: 25,
   displayName: '',
@@ -90,7 +96,6 @@ export class SettingsService {
   readonly settings = this._settings.asReadonly();
   readonly theme = computed(() => this._settings().theme);
   readonly accent = computed(() => this._settings().accent);
-  readonly density = computed(() => this._settings().density);
   readonly sidebarWidth = computed(() => this._settings().sidebarWidth);
   readonly displayName = computed(() => cleanDisplayName(this._settings().displayName) || DEFAULT_DISPLAY_NAME);
 
@@ -120,6 +125,19 @@ export class SettingsService {
       root.style.setProperty('--maroon-soft', isDark ? vars.softDark : vars.soft);
       root.style.setProperty('--maroon-ink',  isDark ? vars.inkDark  : vars.ink);
     });
+
+    // Apply font family overrides from settings.
+    effect(() => {
+      const root = document.documentElement;
+      const uiStack = UI_FONTS[this._settings().uiFont] ?? '';
+      const codeStack = CODE_FONTS[this._settings().codeFont] ?? CODE_FONTS['JetBrains Mono'];
+      if (uiStack) {
+        root.style.setProperty('--font-ui', uiStack);
+      } else {
+        root.style.removeProperty('--font-ui');
+      }
+      root.style.setProperty('--font-mono', codeStack);
+    });
   }
 
   update(partial: Partial<AppSettings>): void {
@@ -142,6 +160,22 @@ export class SettingsService {
     } catch {
       // Browser/dev-server mode cannot access the OS username. The greeting fallback covers this.
     }
+  }
+
+  /** Toggle the OS login-item entry and persist the setting. */
+  async setStartWithSystem(enabled: boolean): Promise<void> {
+    try {
+      // Dynamic import so the app still compiles/runs before the package is installed.
+      const autostart = await import('@tauri-apps/plugin-autostart');
+      if (enabled) {
+        await autostart.enable();
+      } else {
+        await autostart.disable();
+      }
+    } catch {
+      // In browser / dev-server mode, or before the package is installed, silently ignore.
+    }
+    this.update({ startWithSystem: enabled });
   }
 
   resetToDefaults(): void {

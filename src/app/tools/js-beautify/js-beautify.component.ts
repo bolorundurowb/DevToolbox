@@ -2,6 +2,7 @@ import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 import { js as beautifyJs, css as beautifyCss, html as beautifyHtml } from 'js-beautify';
 
 type BeautifyMode = 'js' | 'css' | 'html';
@@ -20,7 +21,7 @@ const SAMPLES: Record<BeautifyMode, string> = {
 
 @Component({
     selector: 'dt-tool-js-beautify',
-    imports: [TopbarComponent, IconComponent, FormsModule],
+    imports: [TopbarComponent, IconComponent, FormsModule, CodeEditorComponent],
     template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'Code Beautifier']" [toolId]="'js'" />
@@ -74,13 +75,7 @@ const SAMPLES: Record<BeautifyMode, string> = {
           <div style="height:34px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-bottom:1px solid var(--border);flex-shrink:0">
             <span style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px">INPUT</span>
           </div>
-          <textarea
-            style="flex:1;resize:none;border:none;outline:none;padding:14px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface);color:var(--text);min-height:0;line-height:1.5"
-            [value]="inputVal()"
-            (input)="onInput($event)"
-            [placeholder]="'Paste ' + modeLabelCurrent() + ' code here…'"
-            spellcheck="false"
-          ></textarea>
+          <dt-code-editor [language]="editorLang()" style="flex:1;min-height:0" [value]="inputVal()" (valueChange)="inputVal.set($event)" />
           <div style="height:28px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-top:1px solid var(--border);flex-shrink:0">
             @if (inputVal().trim()) {
               <span style="font-size:11.5px;color:var(--text-faint)">{{ inputVal().trim().length }} chars in</span>
@@ -122,6 +117,7 @@ export class JsBeautifyComponent {
 
   modeEntries = Object.entries(MODE_LABELS) as [BeautifyMode, string][];
   modeLabelCurrent = computed(() => MODE_LABELS[this.mode()]);
+  readonly editorLang = computed(() => ({ js: 'javascript', css: 'css', html: 'html' }[this.mode()] ?? 'plaintext'));
 
   output = computed(() => {
     const raw = this.inputVal().trim();
@@ -142,10 +138,6 @@ export class JsBeautifyComponent {
     if (!out) return [] as number[];
     return out.split('\n').map((_, i) => i + 1);
   });
-
-  onInput(e: Event) {
-    this.inputVal.set((e.target as HTMLTextAreaElement).value);
-  }
 
   loadSample() {
     this.inputVal.set(SAMPLES[this.mode()]);

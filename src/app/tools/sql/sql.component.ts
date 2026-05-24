@@ -2,6 +2,7 @@ import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 import { format } from 'sql-formatter';
 
 type SqlDialect = 'sql' | 'mysql' | 'postgresql' | 'tsql';
@@ -17,7 +18,7 @@ const SAMPLE_SQL = `SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count, SU
 
 @Component({
     selector: 'dt-tool-sql',
-    imports: [TopbarComponent, IconComponent, FormsModule],
+    imports: [TopbarComponent, IconComponent, FormsModule, CodeEditorComponent],
     template: `
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
       <dt-topbar [crumbs]="['Text & Code', 'SQL Formatter']" [toolId]="'sql'" />
@@ -73,13 +74,7 @@ const SAMPLE_SQL = `SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count, SU
           <div style="height:34px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-bottom:1px solid var(--border);flex-shrink:0">
             <span style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px">SQL INPUT</span>
           </div>
-          <textarea
-            style="flex:1;resize:none;border:none;outline:none;padding:14px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface);color:var(--text);min-height:0;line-height:1.5"
-            [value]="inputVal()"
-            (input)="onInput($event)"
-            placeholder="Paste SQL here…"
-            spellcheck="false"
-          ></textarea>
+          <dt-code-editor language="sql" style="flex:1;min-height:0" [value]="inputVal()" (valueChange)="inputVal.set($event)" />
           <div style="height:28px;padding:0 14px;display:flex;align-items:center;background:var(--surface-muted);border-top:1px solid var(--border);flex-shrink:0;gap:6px">
             @if (error()) {
               <dt-icon name="alert-circle" [size]="12" [color]="'#e05252'" />

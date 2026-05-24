@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 
 const EMAIL_RE = /^[^@]+@[^@]+\.[^@]+$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -81,7 +82,7 @@ function countProps(schema: Record<string, unknown>, depth = 0): { props: number
 
 @Component({
     selector: 'dt-tool-json-schema',
-    imports: [FormsModule, TopbarComponent, IconComponent],
+    imports: [FormsModule, TopbarComponent, IconComponent, CodeEditorComponent],
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
@@ -113,9 +114,7 @@ function countProps(schema: Record<string, unknown>, depth = 0): { props: number
     <!-- Input -->
     <div style="display:flex;flex-direction:column;border-right:1px solid var(--border);min-height:0">
       <div style="padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-muted);flex-shrink:0">Sample JSON</div>
-      <textarea [(ngModel)]="input" (ngModelChange)="generate()"
-        placeholder='{"name":"Alice","age":30,"email":"alice@example.com"}'
-        style="flex:1;resize:none;border:none;outline:none;padding:12px 14px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5;min-height:0"></textarea>
+      <dt-code-editor language="json" style="flex:1;min-height:0" [value]="input" (valueChange)="input = $event; generate()" />
     </div>
     <!-- Output -->
     <div style="display:flex;flex-direction:column;min-height:0">
@@ -132,8 +131,7 @@ function countProps(schema: Record<string, unknown>, depth = 0): { props: number
       @if (error()) {
         <div style="margin:10px;padding:8px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:12px">{{ error() }}</div>
       }
-      <textarea readonly [value]="schema()"
-        style="flex:1;resize:none;border:none;outline:none;padding:12px 14px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5;min-height:0"></textarea>
+      <dt-code-editor language="json" style="flex:1;min-height:0" [value]="schema()" [readOnly]="true" />
     </div>
   </div>
 </div>

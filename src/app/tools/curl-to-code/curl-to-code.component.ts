@@ -1,7 +1,7 @@
 import { Component, signal, computed } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 
 interface ParsedCurl {
   url: string;
@@ -308,7 +308,7 @@ function toPhp(p: ParsedCurl): string {
 
 @Component({
     selector: 'dt-tool-curl-to-code',
-    imports: [FormsModule, TopbarComponent, IconComponent],
+    imports: [TopbarComponent, IconComponent, CodeEditorComponent],
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
@@ -324,10 +324,8 @@ function toPhp(p: ParsedCurl): string {
   </div>
 
   <!-- cURL input -->
-  <div style="padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0">
-    <textarea [(ngModel)]="curlInput" (ngModelChange)="convert()" rows="4"
-      placeholder="curl -X POST https://api.example.com/users \&#10;  -H 'Content-Type: application/json' \&#10;  -d '{&quot;name&quot;:&quot;Alice&quot;}'"
-      style="width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--border);border-radius:7px;padding:10px 12px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface);color:var(--text);line-height:1.5;outline:none"></textarea>
+  <div style="padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;height:140px;display:flex;flex-direction:column">
+    <dt-code-editor language="shell" style="flex:1;min-height:0" [value]="curlInput" (valueChange)="onCurlChange($event)" />
     @if (parsed()) {
       <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap">
         <span style="font-size:11.5px;color:var(--text-faint)"><strong>Method:</strong> {{ parsed()!.method }}</span>
@@ -365,8 +363,7 @@ function toPhp(p: ParsedCurl): string {
     <div style="margin:10px 22px;padding:8px 12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:12px">{{ error() }}</div>
   }
 
-  <textarea readonly [value]="currentCode()"
-    style="flex:1;resize:none;border:none;outline:none;padding:16px 22px;font-family:var(--font-mono);font-size:12.5px;background:var(--surface);color:var(--text);line-height:1.6;min-height:0"></textarea>
+  <dt-code-editor [language]="outputLang()" style="flex:1;min-height:0" [value]="currentCode()" [readOnly]="true" />
 </div>
 `
 })
@@ -389,6 +386,22 @@ export class CurlToCodeComponent {
   copied = signal(false);
 
   currentCode = computed(() => this.codes[this.activeTab()] ?? '');
+
+  outputLang = computed(() => {
+    const tab = this.activeTab();
+    if (tab === 'fetch' || tab === 'axios') return 'javascript';
+    if (tab === 'python') return 'python';
+    if (tab === 'csharp') return 'csharp';
+    if (tab === 'java' || tab === 'kotlin') return 'java';
+    if (tab === 'php') return 'php';
+    if (tab === 'go') return 'go';
+    return 'plaintext';
+  });
+
+  onCurlChange(value: string): void {
+    this.curlInput = value;
+    this.convert();
+  }
 
   convert() {
     this.error.set('');

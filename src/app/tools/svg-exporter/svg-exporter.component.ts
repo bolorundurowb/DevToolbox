@@ -2,6 +2,7 @@ import { Component, signal, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
+import { CodeEditorComponent } from '../../core/components/code-editor/code-editor.component';
 
 const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
   <defs>
@@ -19,7 +20,7 @@ type ExportFormat = 'PNG' | 'JPEG';
 
 @Component({
   selector: 'dt-tool-svg-exporter',
-  imports: [FormsModule, TopbarComponent, IconComponent],
+  imports: [FormsModule, TopbarComponent, IconComponent, CodeEditorComponent],
   styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
   template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
@@ -61,9 +62,7 @@ type ExportFormat = 'PNG' | 'JPEG';
         }
       </div>
 
-      <textarea [(ngModel)]="svgModel" (ngModelChange)="onSvgChange($event)"
-        placeholder="Paste SVG code here..."
-        style="flex:1;resize:none;border:none;outline:none;padding:14px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5"></textarea>
+      <dt-code-editor language="xml" style="flex:1;min-height:0" [(value)]="svgModel" (valueChange)="onSvgChange($event)" />
     </div>
 
     <div style="width:360px;flex-shrink:0;display:flex;flex-direction:column;min-height:0">
