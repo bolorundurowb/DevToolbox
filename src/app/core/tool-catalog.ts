@@ -38,7 +38,8 @@ export const CATEGORIES: Category[] = [
       { id: 'base64',  name: 'Base64 Encoder/Decoder', icon: 'cube', desc: 'Encode or decode text and files', catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/base64',       keywords: ['base64', 'encode', 'decode'] },
       { id: 'url',     name: 'URL Encoder/Decoder', icon: 'globe', desc: 'Percent-encode and decode URLs',    catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/url-encode',   keywords: ['url', 'percent', 'encode', 'decode', 'uri'] },
       { id: 'html',    name: 'HTML Entities Encoder/Decoder', icon: 'code', desc: 'Escape and unescape entities', catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/html-entities',keywords: ['html', 'entities', 'escape', 'encode', 'decode'] },
-      { id: 'jwt',     name: 'JWT Decoder',       icon: 'key',     desc: 'Inspect header and payload',        catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/jwt',          keywords: ['jwt', 'token', 'bearer', 'decode', 'payload', 'header'] },
+      { id: 'jwt',         name: 'JWT Decoder',       icon: 'key',     desc: 'Inspect header and payload',        catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/jwt',          keywords: ['jwt', 'token', 'bearer', 'decode', 'payload', 'header'] },
+      { id: 'jwt-builder', name: 'JWT Builder',       icon: 'key',     desc: 'Mint and sign tokens with WebCrypto', catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/jwt-builder',  keywords: ['jwt', 'token', 'bearer', 'sign', 'build', 'mint', 'hs256', 'hmac', 'payload', 'header'] },
       { id: 'hex',     name: 'Hex / ASCII Converter', icon: 'hash', desc: 'Convert bytes and text',           catId: 'encode', catName: 'Encoding & Decoding', route: '/tools/hex',          keywords: ['hex', 'ascii', 'binary', 'convert', 'bytes'] },
     ]
   },
@@ -76,8 +77,9 @@ export const CATEGORIES: Category[] = [
       { id: 'qr',      name: 'QR Code Generator',   icon: 'qr',      desc: 'Generate and decode QR codes',   catId: 'web', catName: 'Web & Network', route: '/tools/qr',            keywords: ['qr', 'qrcode', 'barcode', 'generate', 'decode'] },
       { id: 'cidr',    name: 'IP / CIDR Calculator', icon: 'network', desc: 'Calculate subnets and ranges',  catId: 'web', catName: 'Web & Network', route: '/tools/ip-cidr',       keywords: ['ip', 'cidr', 'subnet', 'network', 'ipv4', 'ipv6'] },
       { id: 'ua',      name: 'User-Agent Parser',   icon: 'eye',     desc: 'OS · browser · device',          catId: 'web', catName: 'Web & Network', route: '/tools/user-agent',    keywords: ['user-agent', 'ua', 'browser', 'os', 'device', 'parse'] },
-      { id: 'curl',    name: 'cURL to Code',         icon: 'terminal', desc: 'Convert curl to fetch / axios / requests', catId: 'web', catName: 'Web & Network', route: '/tools/curl-to-code', keywords: ['curl', 'fetch', 'axios', 'requests', 'http', 'convert', 'code'] },
-      { id: 'openapi', name: 'OpenAPI Viewer',       icon: 'document',     desc: 'View Swagger / OpenAPI specs locally', catId: 'web', catName: 'Web & Network', route: '/tools/openapi-viewer', keywords: ['openapi', 'swagger', 'rest', 'api', 'documentation', 'spec'] },
+      { id: 'curl',        name: 'cURL to Code',        icon: 'terminal',  desc: 'Convert curl to fetch / axios / requests', catId: 'web', catName: 'Web & Network', route: '/tools/curl-to-code',  keywords: ['curl', 'fetch', 'axios', 'requests', 'http', 'convert', 'code'] },
+      { id: 'openapi',     name: 'OpenAPI Viewer',      icon: 'document',  desc: 'View Swagger / OpenAPI specs locally',     catId: 'web', catName: 'Web & Network', route: '/tools/openapi-viewer', keywords: ['openapi', 'swagger', 'rest', 'api', 'documentation', 'spec'] },
+      { id: 'http-status', name: 'HTTP Status Codes',   icon: 'globe',     desc: 'Reference for all 1xx–5xx codes',          catId: 'web', catName: 'Web & Network', route: '/tools/http-status',    keywords: ['http', 'status', 'code', '404', '200', '500', 'rfc', 'reference', 'api'] },
     ]
   },
   {
@@ -91,10 +93,12 @@ export const CATEGORIES: Category[] = [
   {
     id: 'utils', name: 'Utilities', icon: 'cog',
     tools: [
-      { id: 'unit-conv',  name: 'Unit Converter',         icon: 'hashtag',      desc: 'Data storage & time unit conversion',  catId: 'utils', catName: 'Utilities', route: '/tools/unit-converter',  keywords: ['unit', 'convert', 'bytes', 'kb', 'mb', 'gb', 'ms', 'seconds', 'minutes'] },
-      { id: 'base-conv',  name: 'Number Base Converter',  icon: 'hash',         desc: 'Binary · Octal · Decimal · Hex', catId: 'utils', catName: 'Utilities', route: '/tools/base-converter',  keywords: ['binary', 'octal', 'decimal', 'hex', 'hexadecimal', 'base', 'convert', 'number'] },
-      { id: 'mock-data',  name: 'Mock Data Generator',    icon: 'identification', desc: 'Fake names, emails, addresses',       catId: 'utils', catName: 'Utilities', route: '/tools/mock-data',       keywords: ['mock', 'fake', 'data', 'name', 'email', 'address', 'generate', 'test'] },
-      { id: 'str-escape', name: 'String Escaper',         icon: 'braces', desc: 'Escape/unescape for Java, Python, C#…', catId: 'utils', catName: 'Utilities', route: '/tools/string-escaper',  keywords: ['escape', 'unescape', 'string', 'java', 'python', 'csharp', 'javascript', 'go'] },
+      { id: 'unit-conv',   name: 'Unit Converter',         icon: 'hashtag',        desc: 'Data storage & time unit conversion',      catId: 'utils', catName: 'Utilities', route: '/tools/unit-converter',  keywords: ['unit', 'convert', 'bytes', 'kb', 'mb', 'gb', 'ms', 'seconds', 'minutes'] },
+      { id: 'base-conv',   name: 'Number Base Converter',  icon: 'hash',           desc: 'Binary · Octal · Decimal · Hex',           catId: 'utils', catName: 'Utilities', route: '/tools/base-converter',  keywords: ['binary', 'octal', 'decimal', 'hex', 'hexadecimal', 'base', 'convert', 'number'] },
+      { id: 'bitwise',     name: 'Bitwise Calculator',     icon: 'code-bracket',   desc: 'AND/OR/XOR/shift with multi-base display', catId: 'utils', catName: 'Utilities', route: '/tools/bitwise',         keywords: ['bitwise', 'binary', 'and', 'or', 'xor', 'not', 'shift', 'shl', 'shr', 'bit', 'calculator'] },
+      { id: 'unix-perms',  name: 'Unix Permissions',       icon: 'lock',      desc: 'Convert rwx, octal, setuid, sticky bit',   catId: 'utils', catName: 'Utilities', route: '/tools/unix-perms',      keywords: ['unix', 'permissions', 'chmod', 'rwx', 'octal', 'setuid', 'setgid', 'sticky', 'linux', '755', '644'] },
+      { id: 'mock-data',   name: 'Mock Data Generator',    icon: 'identification', desc: 'Fake names, emails, addresses',            catId: 'utils', catName: 'Utilities', route: '/tools/mock-data',       keywords: ['mock', 'fake', 'data', 'name', 'email', 'address', 'generate', 'test'] },
+      { id: 'str-escape',  name: 'String Escaper',         icon: 'braces',         desc: 'Escape/unescape for Java, Python, C#…',   catId: 'utils', catName: 'Utilities', route: '/tools/string-escaper',  keywords: ['escape', 'unescape', 'string', 'java', 'python', 'csharp', 'javascript', 'go'] },
     ]
   },
 ];
