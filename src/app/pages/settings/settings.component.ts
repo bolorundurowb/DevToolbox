@@ -379,9 +379,8 @@ export class SettingsComponent {
   ];
 
   readonly updateToggles: { key: string; label: string; desc: string }[] = [
-    { key: 'autoCheckUpdates',  label: 'Auto-check for updates', desc: 'Check in the background periodically' },
-    { key: 'bgDownloadUpdates', label: 'Background download',    desc: 'Download updates silently' },
-    { key: 'includeBeta',       label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
+    { key: 'autoCheckUpdates', label: 'Auto-check for updates', desc: 'Check GitHub in the background periodically' },
+    { key: 'includeBeta',      label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
   ];
 
   readonly active          = signal<string>('General');

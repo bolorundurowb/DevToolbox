@@ -48,7 +48,6 @@ export interface AppSettings {
   showReleaseNotes: boolean;
   startWithSystem: boolean;
   autoCheckUpdates: boolean;
-  bgDownloadUpdates: boolean;
   includeBeta: boolean;
   sidebarWidth: number;
   showPinnedBar: boolean;
@@ -67,7 +66,6 @@ const DEFAULTS: AppSettings = {
   showReleaseNotes: false,
   startWithSystem: false,
   autoCheckUpdates: true,
-  bgDownloadUpdates: false,
   includeBeta: false,
   sidebarWidth: 268,
   showPinnedBar: true,

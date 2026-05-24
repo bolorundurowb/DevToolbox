@@ -17,13 +17,15 @@ const NAV = [
   { label: 'About',      icon: 'information-circle' },
 ];
 
-const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/releases/latest';
+const GITHUB_REPO = 'bolorundurowb/dev-core-tools';
+
+type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'error';
 
 @Component({
-    selector: 'dt-about',
-    imports: [IconComponent, TopbarComponent],
-    styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
-    template: `
+  selector: 'dt-about',
+  imports: [IconComponent, TopbarComponent],
+  styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
+  template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
   <dt-topbar [crumbs]="['Settings', 'About']" />
 
@@ -61,30 +63,78 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
           </div>
         </div>
 
-        <!-- Update card -->
-        <div style="padding:18px 20px;border-radius:12px;background:var(--teal-soft);border:1px solid rgba(28,74,79,0.3);margin-bottom:28px">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
-            <div style="flex:1">
-              <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
-                <dt-icon name="arrow-path" [size]="14" color="var(--teal)" />
-                <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">Current version &middot; {{ appVersion() }}</span>
+        <!-- ══ UPDATE CARD ══ -->
+        @if (updateStatus() === 'update-available') {
+          <!-- Update available -->
+          <div style="padding:18px 20px;border-radius:12px;background:var(--maroon-soft);border:1px solid rgba(var(--maroon-rgb,139,0,0),0.25);margin-bottom:28px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+                  <dt-icon name="alert-circle" [size]="14" color="var(--maroon)" />
+                  <span style="font-size:13.5px;font-weight:650;color:var(--maroon-ink);font-family:var(--font-ui)">
+                    {{ latestVersion() }} is available
+                  </span>
+                </div>
+                <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui);line-height:1.5">
+                  You are on {{ appVersion() }}.
+                  @if (latestReleaseDate()) {
+                    Released {{ latestReleaseDate() }}.
+                  }
+                </p>
               </div>
-              <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">Click "Check for updates" to view the latest release on GitHub.</p>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:stretch;flex-shrink:0">
+                <button (click)="openRelease()"
+                  style="padding:7px 16px;border-radius:7px;background:var(--maroon);color:#fff;font-size:12.5px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;font-family:var(--font-ui);display:inline-flex;align-items:center;justify-content:center;gap:6px">
+                  <dt-icon name="link" [size]="12" color="#fff" />
+                  View release
+                </button>
+                <button (click)="resetUpdate()"
+                  style="padding:5px 16px;border-radius:7px;background:transparent;color:var(--text-muted);font-size:11.5px;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui)">
+                  Dismiss
+                </button>
+              </div>
             </div>
-            <button (click)="checkForUpdates()" [disabled]="checkingUpdates()"
-              style="padding:7px 14px;border-radius:7px;background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui);white-space:nowrap;flex-shrink:0">
-              {{ checkingUpdates() ? 'Opening…' : 'Check for updates' }}
-            </button>
           </div>
-          @if (updateMessage()) {
-            <div
-              style="margin-top:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-ui)"
-              [style.color]="updateError() ? '#c0392b' : 'var(--text-muted)'"
-            >
-              {{ updateMessage() }}
+        } @else {
+          <!-- Idle / Checking / Up-to-date / Error -->
+          <div style="padding:18px 20px;border-radius:12px;background:var(--teal-soft);border:1px solid rgba(28,74,79,0.3);margin-bottom:28px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+                  @if (updateStatus() === 'up-to-date') {
+                    <dt-icon name="check-circle" [size]="14" color="var(--teal)" />
+                    <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">
+                      You're up to date &middot; {{ appVersion() }}
+                    </span>
+                  } @else {
+                    <dt-icon name="arrow-path" [size]="14" color="var(--teal)" />
+                    <span style="font-size:13.5px;font-weight:650;color:var(--teal);font-family:var(--font-ui)">
+                      Current version &middot; {{ appVersion() }}
+                    </span>
+                  }
+                </div>
+                @if (updateStatus() === 'error') {
+                  <p style="margin:0;font-size:12.5px;color:#c0392b;font-family:var(--font-ui);line-height:1.5">
+                    {{ updateErrorMsg() }}
+                  </p>
+                } @else if (updateStatus() === 'up-to-date') {
+                  <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">
+                    No newer releases found on GitHub.
+                  </p>
+                } @else {
+                  <p style="margin:0;font-size:12.5px;color:var(--text-muted);font-family:var(--font-ui)">
+                    Click "Check for updates" to query GitHub for a newer release.
+                  </p>
+                }
+              </div>
+              <button (click)="checkForUpdates()" [disabled]="updateStatus() === 'checking'"
+                [style.opacity]="updateStatus() === 'checking' ? '0.55' : '1'"
+                style="padding:7px 14px;border-radius:7px;background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--font-ui);white-space:nowrap;flex-shrink:0">
+                {{ updateStatus() === 'checking' ? 'Checking…' : 'Check for updates' }}
+              </button>
             </div>
-          }
-        </div>
+          </div>
+        }
 
         <!-- Update preferences -->
         <div style="margin-bottom:28px">
@@ -134,15 +184,18 @@ const GITHUB_RELEASES_URL = 'https://github.com/bolorundurowb/dev-core-tools/rel
 `
 })
 export class AboutComponent implements OnInit {
-  private router  = inject(Router);
-  private svc     = inject(SettingsService);
+  private router = inject(Router);
+  private svc    = inject(SettingsService);
 
-  readonly toolCount = ALL_TOOLS.length;
-  readonly appVersion = signal('…');
-  readonly nav = NAV;
-  readonly checkingUpdates = signal(false);
-  readonly updateMessage = signal('');
-  readonly updateError = signal(false);
+  readonly toolCount   = ALL_TOOLS.length;
+  readonly appVersion  = signal('…');
+  readonly nav         = NAV;
+
+  readonly updateStatus      = signal<UpdateStatus>('idle');
+  readonly latestVersion     = signal('');
+  readonly latestReleaseUrl  = signal('');
+  readonly latestReleaseDate = signal('');
+  readonly updateErrorMsg    = signal('');
 
   readonly platform = navigator.platform.startsWith('Win') ? 'Windows'
                     : navigator.platform.startsWith('Mac') ? 'macOS'
@@ -150,9 +203,8 @@ export class AboutComponent implements OnInit {
   readonly arch     = navigator.platform.includes('arm') || navigator.platform.includes('M1') ? 'Apple Silicon' : 'x64';
 
   readonly updatePrefs = [
-    { key: 'autoCheckUpdates'  as const, label: 'Auto-check for updates', desc: 'Check in the background periodically' },
-    { key: 'bgDownloadUpdates' as const, label: 'Background download',    desc: 'Download updates silently' },
-    { key: 'includeBeta'       as const, label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
+    { key: 'autoCheckUpdates' as const, label: 'Auto-check for updates', desc: 'Check GitHub in the background periodically' },
+    { key: 'includeBeta'      as const, label: 'Include beta releases',  desc: 'Opt in to pre-release builds' },
   ];
 
   readonly credits = [
@@ -162,9 +214,13 @@ export class AboutComponent implements OnInit {
     { label: 'Build',     value: 'Vite + esbuild' },
   ];
 
+  /** Raw version string without leading 'v', used for comparison. */
+  private _rawVersion = '';
+
   async ngOnInit(): Promise<void> {
     try {
       const v = await getVersion();
+      this._rawVersion = v;
       this.appVersion.set(`v${v}`);
     } catch {
       this.appVersion.set('v—');
@@ -175,27 +231,99 @@ export class AboutComponent implements OnInit {
     if (label !== 'About') this.router.navigate(['/settings']);
   }
 
-  getPref(key: 'autoCheckUpdates' | 'bgDownloadUpdates' | 'includeBeta'): boolean {
+  getPref(key: 'autoCheckUpdates' | 'includeBeta'): boolean {
     return this.svc.settings()[key];
   }
 
-  togglePref(key: 'autoCheckUpdates' | 'bgDownloadUpdates' | 'includeBeta'): void {
+  togglePref(key: 'autoCheckUpdates' | 'includeBeta'): void {
     this.svc.update({ [key]: !this.svc.settings()[key] } as any);
   }
 
   async checkForUpdates(): Promise<void> {
-    this.checkingUpdates.set(true);
-    this.updateMessage.set('');
-    this.updateError.set(false);
+    if (this.updateStatus() === 'checking') return;
+
+    this.updateStatus.set('checking');
+    this.updateErrorMsg.set('');
+    this.latestVersion.set('');
+    this.latestReleaseUrl.set('');
+    this.latestReleaseDate.set('');
 
     try {
-      await open(GITHUB_RELEASES_URL);
-      this.updateMessage.set('Opened the latest GitHub release in your browser.');
-    } catch (err) {
-      this.updateError.set(true);
-      this.updateMessage.set(err instanceof Error ? err.message : 'Could not open the releases page.');
-    } finally {
-      this.checkingUpdates.set(false);
+      const includeBeta = this.svc.settings().includeBeta;
+      const apiUrl = includeBeta
+        ? `https://api.github.com/repos/${GITHUB_REPO}/releases`
+        : `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+      const res = await fetch(apiUrl, {
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`GitHub returned ${res.status}. Check your connection and try again.`);
+      }
+
+      const data = await res.json();
+
+      // /releases returns an array; /releases/latest returns a single object
+      const release = Array.isArray(data) ? data[0] : data;
+      if (!release?.tag_name) {
+        throw new Error('No releases found on GitHub for this project.');
+      }
+
+      const tagVersion = release.tag_name.replace(/^v/i, '');
+      const isNewer = this.compareVersions(tagVersion, this._rawVersion) > 0;
+
+      if (isNewer) {
+        this.latestVersion.set(`v${tagVersion}`);
+        this.latestReleaseUrl.set(release.html_url ?? `https://github.com/${GITHUB_REPO}/releases/latest`);
+        this.latestReleaseDate.set(release.published_at ? this.formatDate(release.published_at) : '');
+        this.updateStatus.set('update-available');
+      } else {
+        this.updateStatus.set('up-to-date');
+      }
+    } catch (err: any) {
+      this.updateErrorMsg.set(err instanceof Error ? err.message : 'Could not reach GitHub. Check your connection.');
+      this.updateStatus.set('error');
+    }
+  }
+
+  async openRelease(): Promise<void> {
+    const url = this.latestReleaseUrl();
+    if (url) {
+      try { await open(url); } catch { /* best effort */ }
+    }
+  }
+
+  resetUpdate(): void {
+    this.updateStatus.set('idle');
+    this.latestVersion.set('');
+    this.latestReleaseUrl.set('');
+    this.latestReleaseDate.set('');
+    this.updateErrorMsg.set('');
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /** Returns >0 if a is newer than b, 0 if equal, <0 if older. */
+  private compareVersions(a: string, b: string): number {
+    const parse = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
+    const [aMaj = 0, aMin = 0, aPat = 0] = parse(a);
+    const [bMaj = 0, bMin = 0, bPat = 0] = parse(b);
+    if (aMaj !== bMaj) return aMaj - bMaj;
+    if (aMin !== bMin) return aMin - bMin;
+    return aPat - bPat;
+  }
+
+  private formatDate(iso: string): string {
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+      }).format(new Date(iso));
+    } catch {
+      return '';
     }
   }
 }
