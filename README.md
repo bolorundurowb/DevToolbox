@@ -20,7 +20,7 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 - Local-first workflow for sensitive snippets, tokens, images, and configuration files.
 - Native desktop packaging through Tauri for Windows, macOS, and Linux.
 - Angular standalone components, lazy-loaded tool routes, and Tailwind-based styling.
-- Command palette, pinned tools, first-run onboarding, and light/dark/system themes.
+- Command palette, pinned tools, first-run experience, and light/dark/system themes.
 
 ## Screenshots
 
@@ -148,7 +148,7 @@ Dev Core Tools/
 ├── src/                 Angular application
 │   ├── app/core/        Tool catalog, shared icons, and services
 │   ├── app/layout/      Shell, sidebar, topbar, and command palette
-│   ├── app/pages/       Home, onboarding, settings, and about pages
+│   ├── app/pages/       Home, first-run, settings, and about pages
 │   └── app/tools/       Lazy-loaded tool components
 ├── src-tauri/           Tauri configuration and Rust backend commands
 ├── public/              Static frontend assets
