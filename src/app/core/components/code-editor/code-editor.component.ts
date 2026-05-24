@@ -18,7 +18,6 @@ import { SettingsService } from '../../services/settings.service';
  *
  * Editable:
  *   <dt-code-editor language="json" [value]="src" (valueChange)="src = $event" />
- *   <dt-code-editor language="json" [(value)]="src" />
  *
  * Read-only output:
  *   <dt-code-editor language="json" [value]="output()" [readOnly]="true" />
@@ -29,7 +28,56 @@ import { SettingsService } from '../../services/settings.service';
  * directly via `(onInit)`. This avoids the cursor-reset bug caused by the
  * ngModel round-trip (user types → valueChange emits → parent updates binding
  * → writeValue called → editor.setValue resets cursor to 0).
+ *
+ * Custom themes (`dt-light` / `dt-dark`) are defined on first editor init so
+ * Monaco's UI chrome (background, gutter, line highlight, scrollbars) matches
+ * the app's warm colour palette rather than VS Code's default cool grays.
  */
+
+/** Registered once across all CodeEditorComponent instances. */
+function registerDtThemes(monaco: any): void {
+  monaco.editor.defineTheme('dt-light', {
+    base: 'vs',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background':                '#ffffff',
+      'editorGutter.background':          '#ffffff',
+      'editor.lineHighlightBackground':   '#f3f0eb',
+      'editor.lineHighlightBorder':       '#00000000',
+      'editorLineNumber.foreground':      '#c0b4a0',
+      'editorLineNumber.activeForeground':'#8a7060',
+      'editor.selectionBackground':       '#7a243628',
+      'editor.inactiveSelectionBackground':'#7a243614',
+      'editorIndentGuide.background1':    '#ede9e3',
+      'editorIndentGuide.activeBackground1':'#d4ccc0',
+      'scrollbarSlider.background':       '#c0b4a044',
+      'scrollbarSlider.hoverBackground':  '#c0b4a088',
+      'scrollbarSlider.activeBackground': '#c0b4a0bb',
+    },
+  });
+
+  monaco.editor.defineTheme('dt-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background':                '#1c1a17',
+      'editorGutter.background':          '#1c1a17',
+      'editor.lineHighlightBackground':   '#221f1c',
+      'editor.lineHighlightBorder':       '#00000000',
+      'editorLineNumber.foreground':      '#5a4f40',
+      'editorLineNumber.activeForeground':'#9a8878',
+      'editor.selectionBackground':       '#c14a6444',
+      'editor.inactiveSelectionBackground':'#c14a6422',
+      'editorIndentGuide.background1':    '#2a2520',
+      'editorIndentGuide.activeBackground1':'#3d3628',
+      'scrollbarSlider.background':       '#5a4f4044',
+      'scrollbarSlider.hoverBackground':  '#5a4f4088',
+      'scrollbarSlider.activeBackground': '#5a4f40bb',
+    },
+  });
+}
 @Component({
   selector: 'dt-code-editor',
   standalone: true,
@@ -61,9 +109,12 @@ export class CodeEditorComponent implements OnChanges, OnDestroy {
   private editor: any           = null;
   private changeSubscription: any = null;
 
+  /** True once dt-light / dt-dark have been registered with Monaco. */
+  private static themesRegistered = false;
+
   readonly opts = computed(() => ({
     language : this._language(),
-    theme    : this.svc.effectiveTheme() === 'dark' ? 'vs-dark' : 'vs',
+    theme    : this.svc.effectiveTheme() === 'dark' ? 'dt-dark' : 'dt-light',
     readOnly : this._readOnly(),
     automaticLayout   : true,
     minimap           : { enabled: false },
@@ -106,6 +157,19 @@ export class CodeEditorComponent implements OnChanges, OnDestroy {
   /** Called by ngx-monaco-editor after the editor instance is ready. */
   onEditorInit(editor: any): void {
     this.editor = editor;
+
+    // Register custom themes once, then immediately apply the correct one.
+    // We do this here (not in a constructor) because the monaco global is only
+    // available after ngx-monaco-editor has loaded it asynchronously.
+    const monaco = (window as any)['monaco'];
+    if (monaco && !CodeEditorComponent.themesRegistered) {
+      registerDtThemes(monaco);
+      CodeEditorComponent.themesRegistered = true;
+      // setTheme is global — it applies to all open Monaco editors at once.
+      monaco.editor.setTheme(
+        this.svc.effectiveTheme() === 'dark' ? 'dt-dark' : 'dt-light'
+      );
+    }
 
     // Set initial value (editor starts empty)
     const initial = this.value ?? '';
