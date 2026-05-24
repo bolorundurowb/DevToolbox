@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, signal, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -122,8 +121,9 @@ type ExportFormat = 'PNG' | 'JPEG';
       <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
         <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Preview</div>
         <div style="flex:1;min-height:180px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:center;overflow:auto">
-          @if (previewHtml()) {
-            <div style="max-width:100%;max-height:100%" [innerHTML]="previewHtml()"></div>
+          @if (previewUrl()) {
+            <img [src]="previewUrl()!" alt="SVG preview"
+              style="max-width:100%;max-height:100%;object-fit:contain;display:block" />
           } @else {
             <div style="font-size:13px;color:var(--text-faint);text-align:center">Paste or upload SVG content to preview it</div>
           }
@@ -140,12 +140,10 @@ type ExportFormat = 'PNG' | 'JPEG';
 </div>
 `
 })
-export class SvgExporterComponent {
-  private sanitizer = inject(DomSanitizer);
-
+export class SvgExporterComponent implements OnDestroy {
   readonly formats: ExportFormat[] = ['PNG', 'JPEG'];
   readonly svgText = signal('');
-  readonly previewHtml = signal<SafeHtml | null>(null);
+  readonly previewUrl = signal<string | null>(null);
   readonly detectedSize = signal('');
   readonly errorMsg = signal('');
   readonly exportedInfo = signal('');
@@ -164,10 +162,15 @@ export class SvgExporterComponent {
     this.onSvgChange(SAMPLE_SVG);
   }
 
+  ngOnDestroy(): void {
+    this.revokePreview();
+  }
+
   clearAll(): void {
+    this.revokePreview();
     this.svgModel = '';
     this.svgText.set('');
-    this.previewHtml.set(null);
+    this.previewUrl.set(null);
     this.detectedSize.set('');
     this.errorMsg.set('');
     this.exportedInfo.set('');
@@ -180,14 +183,16 @@ export class SvgExporterComponent {
     const svg = value.trim();
 
     if (!svg) {
-      this.previewHtml.set(null);
+      this.revokePreview();
+      this.previewUrl.set(null);
       this.detectedSize.set('');
       return;
     }
 
     const dimensions = this.readSvgDimensions(svg);
     if (!dimensions) {
-      this.previewHtml.set(null);
+      this.revokePreview();
+      this.previewUrl.set(null);
       this.detectedSize.set('');
       this.errorMsg.set('Enter valid SVG markup before exporting.');
       return;
@@ -197,7 +202,15 @@ export class SvgExporterComponent {
     this.exportHeight = dimensions.height;
     this.aspectRatio = dimensions.width / dimensions.height;
     this.detectedSize.set(`${dimensions.width} x ${dimensions.height}`);
-    this.previewHtml.set(this.sanitizer.bypassSecurityTrustHtml(svg));
+
+    this.revokePreview();
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    this.previewUrl.set(URL.createObjectURL(blob));
+  }
+
+  private revokePreview(): void {
+    const old = this.previewUrl();
+    if (old) URL.revokeObjectURL(old);
   }
 
   onFileInput(event: Event): void {

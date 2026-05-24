@@ -38,15 +38,15 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 
 ## Tool Categories
 
-| Category         | Examples                                                                                          |
-|------------------|---------------------------------------------------------------------------------------------------|
-| Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester, Lorem Ipsum  |
-| Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII, string escaper, text case converter  |
+| Category         | Examples                                                                                         |
+|------------------|--------------------------------------------------------------------------------------------------|
+| Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester, Lorem Ipsum |
+| Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII, string escaper, text case converter |
 | Hashing & Crypto | Hash generator, bcrypt, HMAC, AES, RSA keygen, UUIDs, password generator, cert decoder           |
-| Images           | Converter, resizer, cropper, SVG optimizer, SVG exporter, color tools, color palette              |
+| Images           | Converter, resizer, cropper, SVG optimizer, SVG exporter, color tools, color palette             |
 | Web & Network    | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL-to-code, OpenAPI viewer       |
 | Data Transform   | CSV↔JSON, JSON↔TOML, JSON Schema generation, datetime utilities                                  |
-| Utilities        | Unit converter, number base converter, mock data generator, string escaper                        |
+| Utilities        | Unit converter, number base converter, mock data generator, string escaper                       |
 
 ## Tech Stack
 
