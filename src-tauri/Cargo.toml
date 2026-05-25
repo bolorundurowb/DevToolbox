@@ -1,6 +1,6 @@
 [package]
 name = "dev-core-tools"
-version = "1.0.2"
+version = "1.0.3"
 description = "Dev Core Tools — 30 local-first developer tools, one window."
 authors = ["Dev Core Tools Contributors"]
 license = "MIT"
