@@ -1,5 +1,27 @@
-/* JetBrains Mono from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Bundled UI fonts (weights 400/500/600) so they work offline / when not installed on the host. */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/geist/400.css';
+@import '@fontsource/geist/500.css';
+@import '@fontsource/geist/600.css';
+
+/* Bundled code fonts (weights 400/500/600). */
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+@import '@fontsource/fira-code/400.css';
+@import '@fontsource/fira-code/500.css';
+@import '@fontsource/fira-code/600.css';
+@import '@fontsource/cascadia-code/400.css';
+@import '@fontsource/cascadia-code/500.css';
+@import '@fontsource/cascadia-code/600.css';
+@import '@fontsource/source-code-pro/400.css';
+@import '@fontsource/source-code-pro/500.css';
+@import '@fontsource/source-code-pro/600.css';
 
 @tailwind base;
 @tailwind components;
