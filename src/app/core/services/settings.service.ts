@@ -92,6 +92,11 @@ function cleanDisplayName(value: unknown): string {
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private _settings = signal<AppSettings>(this.load());
+  private _systemPrefersDark = signal<boolean>(
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false
+  );
 
   readonly settings = this._settings.asReadonly();
   readonly theme = computed(() => this._settings().theme);
@@ -102,12 +107,17 @@ export class SettingsService {
   readonly effectiveTheme = computed<'light' | 'dark'>(() => {
     const t = this._settings().theme;
     if (t === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return this._systemPrefersDark() ? 'dark' : 'light';
     }
     return t;
   });
 
   constructor() {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mql = window.matchMedia('(prefers-color-scheme: dark)');
+      mql.addEventListener('change', e => this._systemPrefersDark.set(e.matches));
+    }
+
     // Apply dark/light class
     effect(() => {
       const isDark = this.effectiveTheme() === 'dark';
