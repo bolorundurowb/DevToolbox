@@ -180,7 +180,7 @@ const SHORTCUTS = [
                 <select [(ngModel)]="uiFontProxy" (ngModelChange)="setUiFont($event)"
                   style="height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;font-family:var(--font-ui)">
                   @for (f of uiFontKeys; track f) {
-                    <option [value]="f">{{ f }}</option>
+                    <option [value]="f" [style.font-family]="uiFontStack(f)">{{ f }}</option>
                   }
                 </select>
               </div>
@@ -192,7 +192,7 @@ const SHORTCUTS = [
                 <select [(ngModel)]="codeFontProxy" (ngModelChange)="setCodeFont($event)"
                   style="height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;font-family:var(--font-mono)">
                   @for (f of codeFontKeys; track f) {
-                    <option [value]="f">{{ f }}</option>
+                    <option [value]="f" [style.font-family]="codeFontStack(f)">{{ f }}</option>
                   }
                 </select>
               </div>
@@ -430,6 +430,9 @@ export class SettingsComponent {
   }
 
   setMaxHistory(v: number): void { this.svc.update({ maxHistory: Number(v) }); }
+
+  uiFontStack(key: string): string { return UI_FONTS[key] || 'inherit'; }
+  codeFontStack(key: string): string { return CODE_FONTS[key] || 'inherit'; }
 
   clearHistory(): void {
     this.pinned.clearRecent();

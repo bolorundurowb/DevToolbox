@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { EditorComponent } from 'ngx-monaco-editor-v2';
-import { SettingsService } from '../../services/settings.service';
+import { SettingsService, CODE_FONTS } from '../../services/settings.service';
 
 /**
  * DtCodeEditorComponent — Monaco editor wrapper with theme sync.
@@ -119,7 +119,7 @@ export class CodeEditorComponent implements OnChanges, OnDestroy {
     automaticLayout   : true,
     minimap           : { enabled: false },
     fontSize          : 12,
-    fontFamily        : '"JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, monospace',
+    fontFamily        : CODE_FONTS[this.svc.settings().codeFont] ?? CODE_FONTS['JetBrains Mono'],
     lineHeight        : 20,
     scrollBeyondLastLine: false,
     wordWrap          : 'on'   as const,
