@@ -17,8 +17,6 @@ export interface FrameworkGroup {
   dependencies: DepNode[];
 }
 
-// ── tree-node sub-component ───────────────────────────────────────────────────
-
 import { Component as Comp, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Comp({
@@ -103,8 +101,6 @@ export class DepNodeComponent {
     if (this.hasChildren) this.open = !this.open;
   }
 }
-
-// ── main tool component ───────────────────────────────────────────────────────
 
 @Component({
   selector: 'dt-tool-nuget-tree',
@@ -326,8 +322,6 @@ export class NugetTreeComponent {
     }
   }
 }
-
-// ── helpers ───────────────────────────────────────────────────────────────────
 
 function hasAnyTruncated(node: DepNode): boolean {
   if (node.truncated) return true;

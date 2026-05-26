@@ -1,8 +1,6 @@
 use serde::Serialize;
 use tauri::command;
 
-// ─── Public result type ───────────────────────────────────────────────────────
-
 #[derive(Serialize)]
 pub struct DllInfo {
     pub file_name:        String,
@@ -11,8 +9,6 @@ pub struct DllInfo {
     pub assembly_version: Option<String>,
     pub is_dotnet:        bool,
 }
-
-// ─── Tauri command ────────────────────────────────────────────────────────────
 
 #[command]
 pub fn inspect_dll(path: String) -> Result<DllInfo, String> {
