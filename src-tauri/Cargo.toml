@@ -49,6 +49,9 @@ uuid = { version = "1", features = ["v1", "v4", "v7"] }
 # Async
 tokio = { version = "1", features = ["full"] }
 
+# HTTP (NuGet API)
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+
 [profile.release]
 panic = "abort"  # Strip expensive panic clean-up logic
 codegen-units = 1
