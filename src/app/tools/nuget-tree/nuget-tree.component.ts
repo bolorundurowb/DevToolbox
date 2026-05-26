@@ -1,5 +1,6 @@
 import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { invoke } from '@tauri-apps/api/core';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -16,168 +17,9 @@ export interface FrameworkGroup {
   dependencies: DepNode[];
 }
 
-// ── NuGet v3 API resolution (runs entirely in browser via fetch + CORS) ──────
+// ── NuGet dependency resolution runs through the Tauri command layer ─────────
 
 const MAX_DEPTH_VAL = 25;
-
-interface CatalogEntry {
-  id:      string;
-  version: string;
-  dependencyGroups?: Array<{
-    targetFramework?: string;
-    dependencies?:    Array<{ id: string; range?: string }>;
-  }>;
-}
-
-function verTuple(v: string): [number, number, number, number] {
-  const parts = v.split('.').map(p => parseInt((p.split(/[-+]/)[0]) ?? '0', 10) || 0);
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 0];
-}
-
-function compareTuples(
-  a: [number, number, number, number],
-  b: [number, number, number, number],
-): number {
-  for (let i = 0; i < 4; i++) {
-    if (a[i] !== b[i]) return a[i] - b[i];
-  }
-  return 0;
-}
-
-function versionInRange(version: string, lower: string, upper: string): boolean {
-  const v = verTuple(version);
-  return compareTuples(v, verTuple(lower)) >= 0
-      && compareTuples(v, verTuple(upper)) <= 0;
-}
-
-function versionsMatch(a: string, b: string): boolean {
-  return compareTuples(verTuple(a), verTuple(b)) === 0;
-}
-
-function minVersionFromRange(range: string): string | null {
-  const r = range.trim();
-  if (!r || r === '*') return null;
-  if (r.startsWith('[') || r.startsWith('(')) {
-    const inner = r.slice(1);
-    const end   = inner.search(/[,\])]/) ;
-    if (end === -1) return null;
-    const v = inner.slice(0, end).trim();
-    return v || null;
-  }
-  return r;
-}
-
-async function fetchCatalogUrl(url: string): Promise<CatalogEntry> {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`Catalog entry HTTP ${resp.status}`);
-  return resp.json() as Promise<CatalogEntry>;
-}
-
-async function fetchFromIndex(id: string, version: string): Promise<CatalogEntry> {
-  const idLower = id.toLowerCase();
-
-  for (const base of ['registration5-semver1', 'registration5-semver2']) {
-    const url  = `https://api.nuget.org/v3/${base}/${idLower}/index.json`;
-    const resp = await fetch(url);
-    if (resp.status === 404) continue;
-    if (!resp.ok) throw new Error(`Package '${id}' not found (HTTP ${resp.status})`);
-
-    const index = await resp.json() as { items?: unknown[] };
-    const pages = index.items;
-    if (!Array.isArray(pages)) continue;
-
-    for (const page of pages as Record<string, unknown>[]) {
-      const lower = (page['lower'] as string | undefined) ?? '';
-      const upper = (page['upper'] as string | undefined) ?? '';
-      if (lower && upper && !versionInRange(version, lower, upper)) continue;
-
-      let items = page['items'] as Record<string, unknown>[] | undefined;
-      if (!items) {
-        const pageUrl = page['@id'] as string | undefined;
-        if (!pageUrl) continue;
-        const pr = await fetch(pageUrl);
-        if (!pr.ok) continue;
-        const d = await pr.json() as { items?: Record<string, unknown>[] };
-        items = d.items ?? [];
-      }
-
-      for (const item of items) {
-        const atId    = (item['@id'] as string | undefined) ?? '';
-        const itemVer = atId.replace(/\.json$/, '').split('/').pop() ?? '';
-        if (!versionsMatch(itemVer, version)) continue;
-
-        const ce = item['catalogEntry'];
-        if (typeof ce === 'string') return fetchCatalogUrl(ce);
-      }
-    }
-  }
-
-  throw new Error(`Version '${version}' of '${id}' not found in registry`);
-}
-
-async function fetchCatalogEntry(id: string, version: string): Promise<CatalogEntry> {
-  const idLower  = id.toLowerCase();
-  const verLower = version.toLowerCase();
-
-  for (const base of ['registration5-semver1', 'registration5-semver2']) {
-    const url  = `https://api.nuget.org/v3/${base}/${idLower}/${verLower}.json`;
-    const resp = await fetch(url);
-    if (resp.status === 404) continue;
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${id}@${version}`);
-
-    const leaf = await resp.json() as { catalogEntry?: string };
-    const ceUrl = leaf.catalogEntry;
-    if (!ceUrl) throw new Error('Leaf response missing catalogEntry URL');
-    return fetchCatalogUrl(ceUrl);
-  }
-
-  return fetchFromIndex(id, version);
-}
-
-async function resolveNode(
-  id:      string,
-  version: string,
-  depth:   number,
-  path:    Set<string>,
-): Promise<DepNode> {
-  const key = id.toLowerCase();
-
-  if (depth >= MAX_DEPTH_VAL) {
-    return { id, version, frameworks: [], truncated: true, error: null };
-  }
-  if (path.has(key)) {
-    return { id, version, frameworks: [], truncated: true,
-             error: 'circular dependency detected' };
-  }
-
-  const childPath = new Set(path);
-  childPath.add(key);
-
-  try {
-    const entry      = await fetchCatalogEntry(id, version);
-    const frameworks: FrameworkGroup[] = [];
-
-    for (const group of entry.dependencyGroups ?? []) {
-      const tf   = group.targetFramework || 'any';
-      const deps = group.dependencies ?? [];
-
-      const children = await Promise.all(
-        deps
-          .map(dep => ({ id: dep.id, ver: minVersionFromRange(dep.range ?? '') }))
-          .filter((d): d is { id: string; ver: string } => d.ver !== null)
-          .map(d => resolveNode(d.id, d.ver, depth + 1, childPath)),
-      );
-
-      frameworks.push({ framework: tf, dependencies: children });
-    }
-
-    return { id: entry.id, version: entry.version,
-             frameworks, truncated: false, error: null };
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return { id, version, frameworks: [], truncated: false, error: msg };
-  }
-}
 
 // ── Tree-node sub-component ───────────────────────────────────────────────────
 
@@ -374,8 +216,29 @@ export class DepNodeComponent {
         </button>
       </div>
 
+      <!-- Root package row -->
+      <div style="display:flex;align-items:center;gap:7px;padding:7px 8px;
+                  background:var(--surface);border:1px solid var(--border);
+                  border-radius:7px;margin-bottom:6px">
+        <dt-icon name="cube" [size]="13" color="var(--teal)" />
+        <span style="font-family:var(--font-mono);font-size:12.5px;color:var(--text);font-weight:600">
+          {{ t.id }}
+        </span>
+        <span style="font-family:var(--font-mono);font-size:11.5px;color:var(--text-muted)">
+          {{ t.version }}
+        </span>
+        <span style="font-size:11.5px;color:var(--text-faint)">
+          root package
+        </span>
+      </div>
+
       <!-- Root frameworks -->
-      @for (fw of t.frameworks; track fw.framework) {
+      @if (t.frameworks.length === 0) {
+        <div style="padding:10px 28px;font-size:12px;color:var(--text-faint);font-style:italic">
+          No dependencies found for this package version.
+        </div>
+      } @else {
+        @for (fw of t.frameworks; track fw.framework) {
         <div style="margin-bottom:4px">
           <!-- Framework section header -->
           <div
@@ -407,6 +270,7 @@ export class DepNodeComponent {
             }
           }
         </div>
+        }
       }
     </div>
   } @else if (!loading() && !error()) {
@@ -421,7 +285,7 @@ export class DepNodeComponent {
         Resolving dependencies…
       </div>
       <div style="font-size:11.5px;color:var(--text-faint)">
-        This may take a few seconds for packages with deep trees
+        This may take up to 20 seconds for packages with deep trees
       </div>
     </div>
   }
@@ -439,6 +303,14 @@ export class NugetTreeComponent {
   expandAll = signal(false);
 
   private openFws = new Set<string>();
+  private resolveRunId = 0;
+
+  dependencyTreeInvoker(packageId: string, version: string): Promise<DepNode> {
+    return invoke<DepNode>('nuget_dependency_tree', {
+      package: packageId,
+      version,
+    });
+  }
 
   fwOpen(tf: string): boolean {
     if (this.expandAll()) return true;
@@ -467,19 +339,28 @@ export class NugetTreeComponent {
     const ver = this.packageVersion.trim();
     if (!id || !ver) return;
 
+    const runId = ++this.resolveRunId;
     this.loading.set(true);
     this.error.set('');
     this.tree.set(null);
     this.openFws.clear();
 
     try {
-      const result = await resolveNode(id, ver, 0, new Set());
+      const result = await this.dependencyTreeInvoker(id, ver);
+      if (runId !== this.resolveRunId) return;
+
+      if (result.error && result.frameworks.length === 0) {
+        this.error.set(result.error);
+        return;
+      }
+
       this.tree.set(result);
       result.frameworks.forEach(fw => this.openFws.add(fw.framework));
     } catch (e: unknown) {
+      if (runId !== this.resolveRunId) return;
       this.error.set(e instanceof Error ? e.message : String(e));
     } finally {
-      this.loading.set(false);
+      if (runId === this.resolveRunId) this.loading.set(false);
     }
   }
 }
