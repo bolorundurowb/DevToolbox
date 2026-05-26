@@ -1,6 +1,6 @@
 [package]
 name = "dev-core-tools"
-version = "1.0.4"
+version = "1.0.5"
 description = "Dev Core Tools — 30 local-first developer tools, one window."
 authors = ["Dev Core Tools Contributors"]
 license = "MIT"
@@ -35,8 +35,8 @@ image = { version = "0.25", features = ["png", "jpeg", "webp", "avif"] }
 base64 = "0.22"
 
 # Crypto
-sha2 = "0.10"
 sha1 = "0.10"
+sha2 = "0.10"
 md-5 = "0.10"
 crc32fast = "1"
 hmac = "0.12"
