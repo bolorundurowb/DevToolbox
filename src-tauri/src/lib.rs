@@ -25,6 +25,9 @@ pub fn run() {
             commands::bcrypt_verify,
             commands::get_display_name,
             commands::get_system_info,
+            // .NET tools
+            commands::inspect_dll,
+            commands::nuget_dependency_tree,
         ])
         .setup(|_app| {
             // macOS: restore window appearance after transparent titlebar

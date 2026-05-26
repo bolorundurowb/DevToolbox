@@ -75,6 +75,13 @@ const PATHS: Record<string, string> = {
   calendar: `<rect x="2" y="3" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 1.5v3M11 1.5v3M2 6.5h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
   database: `<ellipse cx="8" cy="3.5" rx="5" ry="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 3.5v6.8c0 1.1 2.2 2.2 5 2.2s5-1.1 5-2.2V3.5M3 7c0 1.1 2.2 2.2 5 2.2s5-1.1 5-2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
   network: `<circle cx="4" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="4" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.8 7.1l4.4-2.2M5.8 8.9l4.4 2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+
+  // .NET tool icons + aliases
+  'cpu-chip': `<rect x="5" y="5" width="6" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 5V3M9 5V3M7 13v-2M9 13v-2M5 7H3M5 9H3M13 7h-2M13 9h-2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
+  'share': `<circle cx="12.5" cy="3.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="3.5" cy="8" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12.5" cy="12.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.3 7.1l5.4-2.8M5.3 8.9l5.4 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
+  'chevron-down': `<path d="M3 5l5 4 5-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  'chevron-right': `<path d="M5 3l4 5-4 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  'exclamation-triangle': `<path d="M8 2L1.5 13.5h13L8 2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 6.5v3.5M8 12v.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`,
 };
 
 @Component({

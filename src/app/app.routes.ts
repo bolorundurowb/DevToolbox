@@ -178,6 +178,8 @@ export const routes: Routes = [
       { path: 'tools/bitwise', loadComponent: () => import('./tools/bitwise/bitwise.component').then(m => m.BitwiseComponent) },
       { path: 'tools/http-status', loadComponent: () => import('./tools/http-status/http-status.component').then(m => m.HttpStatusComponent) },
       { path: 'tools/unix-perms', loadComponent: () => import('./tools/unix-perms/unix-perms.component').then(m => m.UnixPermsComponent) },
+      { path: 'tools/dll-inspector', loadComponent: () => import('./tools/dll-inspector/dll-inspector.component').then(m => m.DllInspectorComponent) },
+      { path: 'tools/nuget-tree', loadComponent: () => import('./tools/nuget-tree/nuget-tree.component').then(m => m.NugetTreeComponent) },
       { path: '**', redirectTo: 'home' },
     ],
   },

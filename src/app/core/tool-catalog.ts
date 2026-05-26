@@ -91,6 +91,13 @@ export const CATEGORIES: Category[] = [
     ]
   },
   {
+    id: 'dotnet', name: '.NET', icon: 'cpu-chip',
+    tools: [
+      { id: 'dll-inspector', name: 'DLL Inspector',          icon: 'cpu-chip', desc: 'Assembly name, assembly version, file version', catId: 'dotnet', catName: '.NET', route: '/tools/dll-inspector', keywords: ['dll', 'exe', 'dotnet', '.net', 'assembly', 'version', 'pe', 'clr', 'inspect'] },
+      { id: 'nuget-tree',    name: 'NuGet Dependency Tree',  icon: 'share',    desc: 'Full transitive dependency tree across target frameworks', catId: 'dotnet', catName: '.NET', route: '/tools/nuget-tree',    keywords: ['nuget', 'package', 'dependency', 'tree', 'dotnet', '.net', 'csharp', 'framework', 'transitive'] },
+    ]
+  },
+  {
     id: 'utils', name: 'Utilities', icon: 'cog',
     tools: [
       { id: 'unit-conv',   name: 'Unit Converter',         icon: 'hashtag',        desc: 'Data storage & time unit conversion',      catId: 'utils', catName: 'Utilities', route: '/tools/unit-converter',  keywords: ['unit', 'convert', 'bytes', 'kb', 'mb', 'gb', 'ms', 'seconds', 'minutes'] },

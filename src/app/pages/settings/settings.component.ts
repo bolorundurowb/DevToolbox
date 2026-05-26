@@ -16,6 +16,8 @@ const ACCENT_COLORS: { value: AccentColor; label: string }[] = [
   { value: '#1c4a4f', label: 'Teal'    },
   { value: '#8a6515', label: 'Gold'    },
   { value: '#2f6b35', label: 'Forest'  },
+  { value: '#1a3a5c', label: 'Ocean'   },
+  { value: '#8c2d4a', label: 'Rose'    },
 ];
 
 const SHORTCUTS = [

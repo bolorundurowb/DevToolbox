@@ -2,7 +2,7 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 
 export type Theme = 'light' | 'dark' | 'system';
-export type AccentColor = '#7a2436' | '#1c4a4f' | '#5b3a8a' | '#8a6515' | '#2f6b35';
+export type AccentColor = '#7a2436' | '#1c4a4f' | '#5b3a8a' | '#8a6515' | '#2f6b35' | '#1a3a5c' | '#7a4a20';
 
 /** UI font choices — key is the label stored in settings, value is the CSS font-family stack. */
 export const UI_FONTS: Record<string, string> = {
@@ -51,6 +51,16 @@ const ACCENT_VARS: Record<AccentColor, {
     main: '#2f6b35', mainDark: '#5dc26a',
     soft: 'rgba(47,107,53,0.10)',  softDark: 'rgba(93,194,106,0.12)',
     ink:  '#1a4020', inkDark:  '#a8e5b0',
+  },
+  '#1a3a5c': {
+    main: '#1a3a5c', mainDark: '#5a9fd4',
+    soft: 'rgba(26,58,92,0.10)',   softDark: 'rgba(90,159,212,0.14)',
+    ink:  '#0e2440', inkDark:  '#a0ccee',
+  },
+  '#8c2d4a': {
+    main: '#8c2d4a', mainDark: '#d46a88',
+    soft: 'rgba(140,45,74,0.10)',  softDark: 'rgba(212,106,136,0.14)',
+    ink:  '#621e33', inkDark:  '#f0b0c4',
   },
 };
 
