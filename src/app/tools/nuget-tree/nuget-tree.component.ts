@@ -1,6 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { invoke } from '@tauri-apps/api/core';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
@@ -16,6 +15,171 @@ export interface FrameworkGroup {
   framework:    string;
   dependencies: DepNode[];
 }
+
+// ── NuGet v3 API resolution (runs entirely in browser via fetch + CORS) ──────
+
+const MAX_DEPTH_VAL = 25;
+
+interface CatalogEntry {
+  id:      string;
+  version: string;
+  dependencyGroups?: Array<{
+    targetFramework?: string;
+    dependencies?:    Array<{ id: string; range?: string }>;
+  }>;
+}
+
+function verTuple(v: string): [number, number, number, number] {
+  const parts = v.split('.').map(p => parseInt((p.split(/[-+]/)[0]) ?? '0', 10) || 0);
+  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 0];
+}
+
+function compareTuples(
+  a: [number, number, number, number],
+  b: [number, number, number, number],
+): number {
+  for (let i = 0; i < 4; i++) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return 0;
+}
+
+function versionInRange(version: string, lower: string, upper: string): boolean {
+  const v = verTuple(version);
+  return compareTuples(v, verTuple(lower)) >= 0
+      && compareTuples(v, verTuple(upper)) <= 0;
+}
+
+function versionsMatch(a: string, b: string): boolean {
+  return compareTuples(verTuple(a), verTuple(b)) === 0;
+}
+
+function minVersionFromRange(range: string): string | null {
+  const r = range.trim();
+  if (!r || r === '*') return null;
+  if (r.startsWith('[') || r.startsWith('(')) {
+    const inner = r.slice(1);
+    const end   = inner.search(/[,\])]/) ;
+    if (end === -1) return null;
+    const v = inner.slice(0, end).trim();
+    return v || null;
+  }
+  return r;
+}
+
+async function fetchCatalogUrl(url: string): Promise<CatalogEntry> {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Catalog entry HTTP ${resp.status}`);
+  return resp.json() as Promise<CatalogEntry>;
+}
+
+async function fetchFromIndex(id: string, version: string): Promise<CatalogEntry> {
+  const idLower = id.toLowerCase();
+
+  for (const base of ['registration5-semver1', 'registration5-semver2']) {
+    const url  = `https://api.nuget.org/v3/${base}/${idLower}/index.json`;
+    const resp = await fetch(url);
+    if (resp.status === 404) continue;
+    if (!resp.ok) throw new Error(`Package '${id}' not found (HTTP ${resp.status})`);
+
+    const index = await resp.json() as { items?: unknown[] };
+    const pages = index.items;
+    if (!Array.isArray(pages)) continue;
+
+    for (const page of pages as Record<string, unknown>[]) {
+      const lower = (page['lower'] as string | undefined) ?? '';
+      const upper = (page['upper'] as string | undefined) ?? '';
+      if (lower && upper && !versionInRange(version, lower, upper)) continue;
+
+      let items = page['items'] as Record<string, unknown>[] | undefined;
+      if (!items) {
+        const pageUrl = page['@id'] as string | undefined;
+        if (!pageUrl) continue;
+        const pr = await fetch(pageUrl);
+        if (!pr.ok) continue;
+        const d = await pr.json() as { items?: Record<string, unknown>[] };
+        items = d.items ?? [];
+      }
+
+      for (const item of items) {
+        const atId    = (item['@id'] as string | undefined) ?? '';
+        const itemVer = atId.replace(/\.json$/, '').split('/').pop() ?? '';
+        if (!versionsMatch(itemVer, version)) continue;
+
+        const ce = item['catalogEntry'];
+        if (typeof ce === 'string') return fetchCatalogUrl(ce);
+      }
+    }
+  }
+
+  throw new Error(`Version '${version}' of '${id}' not found in registry`);
+}
+
+async function fetchCatalogEntry(id: string, version: string): Promise<CatalogEntry> {
+  const idLower  = id.toLowerCase();
+  const verLower = version.toLowerCase();
+
+  for (const base of ['registration5-semver1', 'registration5-semver2']) {
+    const url  = `https://api.nuget.org/v3/${base}/${idLower}/${verLower}.json`;
+    const resp = await fetch(url);
+    if (resp.status === 404) continue;
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${id}@${version}`);
+
+    const leaf = await resp.json() as { catalogEntry?: string };
+    const ceUrl = leaf.catalogEntry;
+    if (!ceUrl) throw new Error('Leaf response missing catalogEntry URL');
+    return fetchCatalogUrl(ceUrl);
+  }
+
+  return fetchFromIndex(id, version);
+}
+
+async function resolveNode(
+  id:      string,
+  version: string,
+  depth:   number,
+  path:    Set<string>,
+): Promise<DepNode> {
+  const key = id.toLowerCase();
+
+  if (depth >= MAX_DEPTH_VAL) {
+    return { id, version, frameworks: [], truncated: true, error: null };
+  }
+  if (path.has(key)) {
+    return { id, version, frameworks: [], truncated: true,
+             error: 'circular dependency detected' };
+  }
+
+  const childPath = new Set(path);
+  childPath.add(key);
+
+  try {
+    const entry      = await fetchCatalogEntry(id, version);
+    const frameworks: FrameworkGroup[] = [];
+
+    for (const group of entry.dependencyGroups ?? []) {
+      const tf   = group.targetFramework || 'any';
+      const deps = group.dependencies ?? [];
+
+      const children = await Promise.all(
+        deps
+          .map(dep => ({ id: dep.id, ver: minVersionFromRange(dep.range ?? '') }))
+          .filter((d): d is { id: string; ver: string } => d.ver !== null)
+          .map(d => resolveNode(d.id, d.ver, depth + 1, childPath)),
+      );
+
+      frameworks.push({ framework: tf, dependencies: children });
+    }
+
+    return { id: entry.id, version: entry.version,
+             frameworks, truncated: false, error: null };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { id, version, frameworks: [], truncated: false, error: msg };
+  }
+}
+
+// ── Tree-node sub-component ───────────────────────────────────────────────────
 
 import { Component as Comp, Input, ChangeDetectionStrategy } from '@angular/core';
 
@@ -102,6 +266,8 @@ export class DepNodeComponent {
   }
 }
 
+// ── Main tool component ───────────────────────────────────────────────────────
+
 @Component({
   selector: 'dt-tool-nuget-tree',
   imports: [FormsModule, TopbarComponent, IconComponent, DepNodeComponent],
@@ -130,20 +296,20 @@ export class DepNodeComponent {
               border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap">
     <input
       [(ngModel)]="packageId"
-      (keydown.enter)="fetch()"
+      (keydown.enter)="resolve()"
       placeholder="Package ID  e.g. Newtonsoft.Json"
       style="flex:2;min-width:180px;height:32px;padding:0 10px;border:1px solid var(--border);
              border-radius:7px;font-size:13px;background:var(--surface);color:var(--text);outline:none"
     />
     <input
       [(ngModel)]="packageVersion"
-      (keydown.enter)="fetch()"
+      (keydown.enter)="resolve()"
       placeholder="Version  e.g. 13.0.3"
       style="flex:1;min-width:120px;height:32px;padding:0 10px;border:1px solid var(--border);
              border-radius:7px;font-size:13px;background:var(--surface);color:var(--text);outline:none"
     />
     <button
-      (click)="fetch()"
+      (click)="resolve()"
       [disabled]="loading() || !packageId.trim() || !packageVersion.trim()"
       style="height:32px;padding:0 16px;border-radius:7px;font-size:12.5px;font-weight:500;
              background:var(--teal);color:#fff;border:none;cursor:pointer;
@@ -263,19 +429,18 @@ export class DepNodeComponent {
 `
 })
 export class NugetTreeComponent {
-  readonly MAX_DEPTH = 25;
+  readonly MAX_DEPTH = MAX_DEPTH_VAL;
 
   packageId      = '';
   packageVersion = '';
-  loading  = signal(false);
-  error    = signal('');
-  tree     = signal<DepNode | null>(null);
+  loading   = signal(false);
+  error     = signal('');
+  tree      = signal<DepNode | null>(null);
   expandAll = signal(false);
 
-  // Track which root framework sections are open
   private openFws = new Set<string>();
 
-  fwOpen(tf: string) {
+  fwOpen(tf: string): boolean {
     if (this.expandAll()) return true;
     return this.openFws.has(tf);
   }
@@ -297,7 +462,7 @@ export class NugetTreeComponent {
     return countNodes(t);
   });
 
-  async fetch() {
+  async resolve() {
     const id  = this.packageId.trim();
     const ver = this.packageVersion.trim();
     if (!id || !ver) return;
@@ -308,15 +473,11 @@ export class NugetTreeComponent {
     this.openFws.clear();
 
     try {
-      const result = await invoke<DepNode>('nuget_dependency_tree', {
-        package: id,
-        version: ver,
-      });
+      const result = await resolveNode(id, ver, 0, new Set());
       this.tree.set(result);
-      // Auto-open all root frameworks
       result.frameworks.forEach(fw => this.openFws.add(fw.framework));
-    } catch (e: any) {
-      this.error.set(e?.message ?? String(e));
+    } catch (e: unknown) {
+      this.error.set(e instanceof Error ? e.message : String(e));
     } finally {
       this.loading.set(false);
     }

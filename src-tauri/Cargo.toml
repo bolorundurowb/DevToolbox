@@ -50,7 +50,8 @@ uuid = { version = "1", features = ["v1", "v4", "v7"] }
 tokio = { version = "1", features = ["full"] }
 
 # HTTP (NuGet API)
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+reqwest  = { version = "0.12", features = ["json", "native-tls"] }
+futures  = "0.3"
 
 [profile.release]
 panic = "abort"  # Strip expensive panic clean-up logic

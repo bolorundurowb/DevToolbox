@@ -1,9 +1,10 @@
+use futures::future::join_all;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tauri::command;
 
 const MAX_DEPTH: u32 = 25;
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(20);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[derive(Serialize, Clone)]
 pub struct DepNode {
@@ -60,108 +61,103 @@ pub async fn nuget_dependency_tree(
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {e}"))?;
 
-    let mut path: Vec<String> = Vec::new();
-    let node = resolve(&client, &package, &version, 0, &mut path).await;
-    Ok(node)
+    Ok(resolve(&client, &package, &version, 0, &[]).await)
 }
 
-async fn resolve(
-    client:  &reqwest::Client,
-    id:      &str,
-    version: &str,
+// Recursive resolver. `path` is a slice of package IDs already on the current
+// branch (cycle detection). Each call clones path + new entry for children.
+fn resolve<'a>(
+    client:  &'a reqwest::Client,
+    id:      &'a str,
+    version: &'a str,
     depth:   u32,
-    path:    &mut Vec<String>,
-) -> DepNode {
-    let key = id.to_lowercase();
+    path:    &'a [String],
+) -> futures::future::BoxFuture<'a, DepNode> {
+    Box::pin(async move {
+        let key = id.to_lowercase();
 
-    if depth >= MAX_DEPTH {
-        return DepNode {
-            id: id.to_string(), version: version.to_string(),
-            frameworks: vec![], truncated: true, error: None,
-        };
-    }
+        if depth >= MAX_DEPTH {
+            return DepNode { id: id.into(), version: version.into(),
+                frameworks: vec![], truncated: true, error: None };
+        }
+        if path.iter().any(|p| p == &key) {
+            return DepNode { id: id.into(), version: version.into(),
+                frameworks: vec![], truncated: true,
+                error: Some("circular dependency detected".into()) };
+        }
 
-    if path.contains(&key) {
-        return DepNode {
-            id: id.to_string(), version: version.to_string(),
-            frameworks: vec![], truncated: true,
-            error: Some("circular dependency detected".to_string()),
-        };
-    }
+        let mut child_path: Vec<String> = path.to_vec();
+        child_path.push(key);
 
-    path.push(key.clone());
+        match fetch_catalog_entry(client, id, version).await {
+            Err(e) => DepNode { id: id.into(), version: version.into(),
+                frameworks: vec![], truncated: false, error: Some(e) },
 
-    let result = match fetch_catalog_entry(client, id, version).await {
-        Err(e) => DepNode {
-            id: id.to_string(), version: version.to_string(),
-            frameworks: vec![], truncated: false, error: Some(e),
-        },
-        Ok(entry) => {
-            let resolved_version = entry.version.clone();
-            let mut frameworks = Vec::new();
+            Ok(entry) => {
+                let mut frameworks = Vec::new();
 
-            for group in entry.dependency_groups {
-                let tf = if group.target_framework.is_empty() {
-                    "any".to_string()
-                } else {
-                    group.target_framework.clone()
-                };
-
-                let mut deps = Vec::new();
-                for dep in group.dependencies {
-                    let dep_version = match min_version_from_range(&dep.range) {
-                        Some(v) => v,
-                        None => continue,
+                for group in entry.dependency_groups {
+                    let tf = if group.target_framework.is_empty() {
+                        "any".to_string()
+                    } else {
+                        group.target_framework
                     };
-                    let child = Box::pin(resolve(client, &dep.id, &dep_version, depth + 1, path)).await;
-                    deps.push(child);
-                }
-                frameworks.push(FrameworkGroup { framework: tf, dependencies: deps });
-            }
 
-            DepNode {
-                id: entry.id, version: resolved_version,
-                frameworks, truncated: false, error: None,
+                    // Resolve all deps in this framework group concurrently.
+                    let futures: Vec<_> = group.dependencies
+                        .into_iter()
+                        .filter_map(|dep| {
+                            min_version_from_range(&dep.range)
+                                .map(|v| (dep.id, v))
+                        })
+                        .map(|(dep_id, dep_ver)| {
+                            let cp = child_path.clone();
+                            async move {
+                                resolve(client, &dep_id, &dep_ver, depth + 1, &cp).await
+                            }
+                        })
+                        .collect();
+
+                    let deps = join_all(futures).await;
+                    frameworks.push(FrameworkGroup { framework: tf, dependencies: deps });
+                }
+
+                DepNode { id: entry.id, version: entry.version,
+                    frameworks, truncated: false, error: None }
             }
         }
-    };
-
-    path.pop();
-    result
+    })
 }
 
-// Fetch the catalog entry for a specific package version.
-// The NuGet registration leaf endpoint returns `catalogEntry` as a URL string,
-// so two HTTP requests are always needed: leaf → catalog entry.
-// Falls back to the registration index when the exact-version leaf returns 404.
+// The registration leaf endpoint returns `catalogEntry` as a URL string.
+// Two requests are always required: leaf → catalog entry.
+// Falls back to an index scan when the exact-version leaf returns 404.
 async fn fetch_catalog_entry(
     client:  &reqwest::Client,
     id:      &str,
     version: &str,
 ) -> Result<CatalogEntry, String> {
-    let id_lower      = id.to_lowercase();
-    let version_lower = version.to_lowercase();
+    let id_lower = id.to_lowercase();
+    let ver_lower = version.to_lowercase();
 
-    // Try semver1 leaf first, then semver2 leaf, then fall back to index scan.
     for base in &["registration5-semver1", "registration5-semver2"] {
-        let url = format!("https://api.nuget.org/v3/{base}/{id_lower}/{version_lower}.json");
+        let url = format!("https://api.nuget.org/v3/{base}/{id_lower}/{ver_lower}.json");
         let resp = match client.get(&url).send().await {
             Ok(r) => r,
-            Err(_) => continue,
+            Err(e) => return Err(format!("Network error: {e}")),
         };
         if resp.status() == 404 { continue; }
-        if !resp.status().is_success() {
-            return Err(format!("HTTP {}", resp.status()));
-        }
+        if !resp.status().is_success() { return Err(format!("HTTP {}", resp.status())); }
+
         let leaf: RegistrationLeaf = resp.json().await
             .map_err(|e| format!("Failed to parse leaf: {e}"))?;
-        return fetch_catalog_from_url(client, &leaf.catalog_entry).await;
+        return fetch_catalog_url(client, &leaf.catalog_entry).await;
     }
 
     fetch_from_index(client, id, version).await
 }
 
-async fn fetch_catalog_from_url(client: &reqwest::Client, url: &str) -> Result<CatalogEntry, String> {
+async fn fetch_catalog_url(client: &reqwest::Client, url: &str) -> Result<CatalogEntry, String> {
     let resp = client.get(url).send().await
         .map_err(|e| format!("Failed to fetch catalog entry: {e}"))?;
     if !resp.status().is_success() {
@@ -170,9 +166,8 @@ async fn fetch_catalog_from_url(client: &reqwest::Client, url: &str) -> Result<C
     resp.json().await.map_err(|e| format!("Failed to parse catalog entry: {e}"))
 }
 
-// Fall back to scanning the registration index when the exact-version leaf is unavailable.
-// Handles both paginated indexes (pages referenced by URL) and inline items.
-// Each item's `catalogEntry` field is always a URL string — never an inline object.
+// Index fallback: handles paginated pages and URL-based catalogEntry fields.
+// Uses page lower/upper bounds to skip pages that cannot contain the target version.
 async fn fetch_from_index(
     client:  &reqwest::Client,
     id:      &str,
@@ -184,7 +179,8 @@ async fn fetch_from_index(
         let url = format!("https://api.nuget.org/v3/{base}/{id_lower}/index.json");
         let resp = match client.get(&url).send().await {
             Ok(r) if r.status().is_success() => r,
-            _ => continue,
+            Ok(r) => return Err(format!("Package '{id}' not found (HTTP {})", r.status())),
+            Err(e) => return Err(format!("Network error: {e}")),
         };
 
         let index: serde_json::Value = resp.json().await
@@ -196,28 +192,33 @@ async fn fetch_from_index(
         };
 
         for page in &pages {
-            // Pages may be inline (have an "items" array) or paginated (only an "@id" URL).
+            // Skip pages whose version range excludes the target.
+            let lower = page["lower"].as_str().unwrap_or("");
+            let upper = page["upper"].as_str().unwrap_or("");
+            if !lower.is_empty() && !upper.is_empty()
+                && !version_in_range(version, lower, upper)
+            {
+                continue;
+            }
+
+            // Pages may be inline (have "items") or paginated (only an "@id" URL).
             let items: Vec<serde_json::Value> = if let Some(inline) = page["items"].as_array() {
                 inline.clone()
             } else if let Some(page_url) = page["@id"].as_str() {
-                let page_resp = match client.get(page_url).send().await {
+                let pr = match client.get(page_url).send().await {
                     Ok(r) if r.status().is_success() => r,
                     _ => continue,
                 };
-                let page_data: serde_json::Value = match page_resp.json().await {
-                    Ok(d) => d,
+                match pr.json::<serde_json::Value>().await {
+                    Ok(d) => d["items"].as_array().cloned().unwrap_or_default(),
                     Err(_) => continue,
-                };
-                match page_data["items"].as_array() {
-                    Some(a) => a.clone(),
-                    None => continue,
                 }
             } else {
                 continue
             };
 
             for item in &items {
-                // Extract version from the item's @id leaf URL path (e.g. ".../1.2.3.json").
+                // Version lives in the leaf @id URL: ".../id/1.2.3.json"
                 let item_ver = item["@id"].as_str()
                     .and_then(|s| s.strip_suffix(".json"))
                     .and_then(|s| s.rsplit('/').next())
@@ -229,7 +230,7 @@ async fn fetch_from_index(
                     Some(u) => u,
                     None => continue,
                 };
-                return fetch_catalog_from_url(client, ce_url).await;
+                return fetch_catalog_url(client, ce_url).await;
             }
         }
     }
@@ -237,20 +238,23 @@ async fn fetch_from_index(
     Err(format!("Version '{version}' of '{id}' not found in registry"))
 }
 
-fn versions_match(a: &str, b: &str) -> bool {
-    normalise_ver(a) == normalise_ver(b)
+fn version_in_range(version: &str, lower: &str, upper: &str) -> bool {
+    let v = ver_tuple(version);
+    v >= ver_tuple(lower) && v <= ver_tuple(upper)
 }
 
-fn normalise_ver(v: &str) -> String {
-    // Strip any pre-release suffix before parsing each component.
-    let parts: Vec<u64> = v.split('.')
-        .map(|p| p.split(['-', '+']).next().unwrap_or("").parse().unwrap_or(0))
-        .collect();
-    format!("{}.{}.{}.{}",
-        parts.first().unwrap_or(&0),
-        parts.get(1).unwrap_or(&0),
-        parts.get(2).unwrap_or(&0),
-        parts.get(3).unwrap_or(&0),
+fn versions_match(a: &str, b: &str) -> bool {
+    ver_tuple(a) == ver_tuple(b)
+}
+
+fn ver_tuple(v: &str) -> (u64, u64, u64, u64) {
+    let mut parts = v.split('.')
+        .map(|p| p.split(['-', '+']).next().unwrap_or("").parse::<u64>().unwrap_or(0));
+    (
+        parts.next().unwrap_or(0),
+        parts.next().unwrap_or(0),
+        parts.next().unwrap_or(0),
+        parts.next().unwrap_or(0),
     )
 }
 
