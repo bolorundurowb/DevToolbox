@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ALL_TOOLS, searchTools, Tool } from '../tool-catalog';
+import { I18nService } from '../i18n/i18n.service';
 
 @Injectable({ providedIn: 'root' })
 export class SearchService {
@@ -9,7 +10,7 @@ export class SearchService {
   readonly results = signal<Tool[]>([]);
   readonly selectedIndex = signal(0);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private i18n: I18nService) {}
 
   open(): void {
     this.query.set('');
@@ -25,7 +26,7 @@ export class SearchService {
 
   setQuery(q: string): void {
     this.query.set(q);
-    const found = searchTools(q);
+    const found = searchTools(q, value => this.i18n.translateText(value));
     this.results.set(found.slice(0, 8));
     this.selectedIndex.set(0);
   }

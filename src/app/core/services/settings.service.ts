@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
+import type { LocaleCode } from '../i18n/i18n.types';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type AccentColor = '#7a2436' | '#1c4a4f' | '#5b3a8a' | '#8a6515' | '#2f6b35' | '#1a3a5c' | '#a0430f' | '#9d2d72';
@@ -80,6 +81,7 @@ export interface AppSettings {
   trackHistory: boolean;
   maxHistory: number;
   displayName: string;
+  locale: LocaleCode;
 }
 
 const DEFAULTS: AppSettings = {
@@ -93,6 +95,7 @@ const DEFAULTS: AppSettings = {
   trackHistory: true,
   maxHistory: 25,
   displayName: '',
+  locale: 'en-GB',
 };
 
 const STORAGE_KEY = 'dev-core-tools-settings';
@@ -102,6 +105,10 @@ const MIN_SIDEBAR_WIDTH = 268;
 function cleanDisplayName(value: unknown): string {
   if (typeof value !== 'string') return '';
   return value.trim().replace(/\s+/g, ' ').slice(0, 60);
+}
+
+function cleanLocale(value: unknown): LocaleCode {
+  return value === 'en-GB' ? value : DEFAULTS.locale;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -139,6 +146,11 @@ export class SettingsService {
       document.documentElement.classList.toggle('dark', isDark);
     });
 
+    // Keep the document language aligned with the selected UI locale.
+    effect(() => {
+      document.documentElement.lang = this._settings().locale;
+    });
+
     // Apply accent color CSS variables whenever accent or theme changes.
     // We use separate light/dark values so text is always legible.
     effect(() => {
@@ -170,6 +182,9 @@ export class SettingsService {
       const next = { ...s, ...partial };
       if ('displayName' in partial) {
         next.displayName = cleanDisplayName(partial.displayName);
+      }
+      if ('locale' in partial) {
+        next.locale = cleanLocale(partial.locale);
       }
       this.persist(next);
       return next;
@@ -218,6 +233,8 @@ export class SettingsService {
       this._settings.update(s => {
         const next = { ...DEFAULTS, ...s, ...parsed };
         next.sidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Number(next.sidebarWidth) || MIN_SIDEBAR_WIDTH);
+        next.displayName = cleanDisplayName(next.displayName);
+        next.locale = cleanLocale(next.locale);
         this.persist(next);
         return next;
       });
@@ -233,6 +250,8 @@ export class SettingsService {
       if (raw) {
         const loaded = { ...DEFAULTS, ...JSON.parse(raw) };
         loaded.sidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Number(loaded.sidebarWidth) || MIN_SIDEBAR_WIDTH);
+        loaded.displayName = cleanDisplayName(loaded.displayName);
+        loaded.locale = cleanLocale(loaded.locale);
         return loaded;
       }
     } catch { /* ignore */ }

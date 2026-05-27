@@ -118,13 +118,13 @@ export const TOOL_BY_ID: Record<string, Tool> = Object.fromEntries(
   ALL_TOOLS.map(t => [t.id, t])
 );
 
-export function searchTools(query: string): Tool[] {
+export function searchTools(query: string, translate: (value: string) => string = value => value): Tool[] {
   if (!query.trim()) return ALL_TOOLS;
   const q = query.toLowerCase();
   return ALL_TOOLS.filter(t =>
-    t.name.toLowerCase().includes(q) ||
-    t.desc.toLowerCase().includes(q) ||
-    t.catName.toLowerCase().includes(q) ||
-    (t.keywords || []).some(k => k.includes(q))
+    translate(t.name).toLowerCase().includes(q) ||
+    translate(t.desc).toLowerCase().includes(q) ||
+    translate(t.catName).toLowerCase().includes(q) ||
+    (t.keywords || []).some(k => k.toLowerCase().includes(q) || translate(k).toLowerCase().includes(q))
   );
 }
