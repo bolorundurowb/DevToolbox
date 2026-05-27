@@ -2,6 +2,7 @@ use futures::future::join_all;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
+    cmp::Ordering as CmpOrdering,
     collections::{HashMap, HashSet},
     sync::{
         atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -12,7 +13,7 @@ use std::{
 use tauri::{command, ipc::Channel};
 use tokio::{
     sync::{Mutex as AsyncMutex, Semaphore},
-    time::{timeout, Instant},
+    time::{sleep, timeout, Instant},
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -23,64 +24,70 @@ const RESOLUTION_TIMEOUT: Duration = Duration::from_secs(30);
 const SOFT_RESOLUTION_TIMEOUT: Duration = Duration::from_secs(28);
 const MAX_NODES: usize = 500;
 const MAX_CONCURRENT_REQUESTS: usize = 10;
+const MAX_RETRIES: u32 = 3;
+
+// ── Error Handling ────────────────────────────────────────────────────────────
+
+#[derive(thiserror::Error, Debug, Clone)]
+pub enum NugetError {
+    #[error("Network error: {0}")]
+    Network(String),
+    #[error("HTTP error: {0}")]
+    Http(u16),
+    #[error("Time limit reached")]
+    Timeout,
+    #[error("Node limit reached")]
+    NodeLimit,
+    #[error("Package '{0}' not found")]
+    NotFound(String),
+    #[error("Parse error: {0}")]
+    Parse(String),
+    #[error("{0}")]
+    Other(String),
+}
 
 // ── Streaming event types ─────────────────────────────────────────────────────
 
-/// Events streamed progressively through the Channel to the frontend.
 #[derive(Serialize, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum NugetEvent {
-    /// First event — the root package identity + ALL its framework dependency
-    /// groups so the header card can be rendered after a single HTTP call.
     #[serde(rename = "header")]
     Header {
-        id: String,
-        version: String,
+        id: Arc<str>,
+        version: Arc<str>,
         #[serde(rename = "frameworkGroups")]
         framework_groups: Vec<FrameworkGroup>,
     },
-
-    /// One package has been fully resolved.  Emitted exactly once per
-    /// id+version (subsequent encounters of the same package by other branches
-    /// are silently skipped — the frontend registry already has the entry).
     #[serde(rename = "packageData")]
     PackageData {
-        id: String,
-        version: String,
+        id: Arc<str>,
+        version: Arc<str>,
         #[serde(rename = "frameworkGroups")]
         framework_groups: Vec<FrameworkGroup>,
         truncated: bool,
         #[serde(skip_serializing_if = "Option::is_none")]
         error: Option<String>,
     },
-
-    /// All resolution work is complete.
     #[serde(rename = "done")]
     Done {
         #[serde(rename = "totalNodes")]
         total_nodes: usize,
         truncated: bool,
     },
-
-    /// A fatal, top-level error (package not found, unreachable network, etc.).
     #[serde(rename = "error")]
     Error { message: String },
 }
 
-/// One target-framework bucket inside a resolved package.
 #[derive(Serialize, Clone)]
 pub struct FrameworkGroup {
-    pub framework: String,
+    pub framework: Arc<str>,
     pub deps: Vec<SimpleDep>,
 }
 
-/// A direct dependency reference inside a framework group.
 #[derive(Serialize, Clone)]
 pub struct SimpleDep {
-    pub id: String,
-    pub version: String,
-    /// Set to `true` when this dep already appears in the current branch path.
-    /// The frontend should display a "circular" badge and treat it as a leaf.
+    pub id: Arc<str>,
+    pub version: Arc<str>,
     pub circular: bool,
 }
 
@@ -124,20 +131,11 @@ struct RawDepRef {
 
 // ── Shared resolution state ───────────────────────────────────────────────────
 
-type CatalogResult = Result<Arc<CatalogEntry>, String>;
+type CatalogResult = Result<Arc<CatalogEntry>, NugetError>;
 
 struct ResolveState {
-    /// Catalog entries cached by `id@version` (lowercase).
-    /// The inner AsyncMutex ensures exactly one HTTP fetch per package —
-    /// concurrent requests for the same package wait on the lock and then
-    /// read the cached value.
-    catalog_cache: StdMutex<HashMap<String, Arc<AsyncMutex<Option<CatalogResult>>>>>,
-
-    /// Set of package keys whose PackageData event has been emitted.
-    /// `try_claim_emit` returns true on the first insert (claim the work),
-    /// false on all subsequent attempts (skip — the registry already has data).
-    emitted: StdMutex<HashSet<String>>,
-
+    catalog_cache: StdMutex<HashMap<Arc<str>, Arc<AsyncMutex<Option<CatalogResult>>>>>,
+    emitted: StdMutex<HashSet<Arc<str>>>,
     nodes: AtomicUsize,
     any_truncated: AtomicBool,
     request_permits: Semaphore,
@@ -164,13 +162,8 @@ impl ResolveState {
         self.time_remaining().is_none()
     }
 
-    /// Returns `true` if the caller should emit + recurse for this package,
-    /// `false` if another branch already claimed that responsibility.
-    fn try_claim_emit(&self, id: &str, version: &str) -> bool {
-        self.emitted
-            .lock()
-            .unwrap()
-            .insert(cache_key(id, version))
+    fn try_claim_emit(&self, key: &Arc<str>) -> bool {
+        self.emitted.lock().unwrap().insert(Arc::clone(key))
     }
 }
 
@@ -207,19 +200,18 @@ pub async fn nuget_dependency_tree(
         RESOLUTION_TIMEOUT,
         resolve_root(client, state.clone(), on_event.clone(), package, version),
     )
-    .await;
+        .await;
 
     match result {
         Err(_) => {
             let _ = on_event.send(NugetEvent::Error {
-                message: format!(
-                    "Timed out after {} seconds",
-                    RESOLUTION_TIMEOUT.as_secs()
-                ),
+                message: format!("Timed out after {} seconds", RESOLUTION_TIMEOUT.as_secs()),
             });
         }
-        Ok(Err(msg)) => {
-            let _ = on_event.send(NugetEvent::Error { message: msg });
+        Ok(Err(e)) => {
+            let _ = on_event.send(NugetEvent::Error {
+                message: e.to_string(),
+            });
         }
         Ok(Ok(())) => {
             let total = state.nodes.load(Ordering::Relaxed);
@@ -236,37 +228,32 @@ pub async fn nuget_dependency_tree(
 
 // ── Resolution logic ──────────────────────────────────────────────────────────
 
-/// Fetch the root catalog entry, emit `Header` (immediately visible to the
-/// frontend after a single HTTP call), then resolve all transitive deps.
 async fn resolve_root(
     client: reqwest::Client,
     state: Arc<ResolveState>,
     on_event: Arc<Channel<NugetEvent>>,
     id: String,
     version: String,
-) -> Result<(), String> {
-    let entry = fetch_catalog_cached(&client, &state, &id, &version)
-        .await
-        .map_err(|e| format!("Failed to fetch '{id}' v{version}: {e}"))?;
+) -> Result<(), NugetError> {
+    let key: Arc<str> = cache_key(&id, &version).into();
 
-    // Build the initial branch path with just the root package.
-    let root_key: Arc<str> = cache_key(&entry.id, &entry.version).into();
-    let root_path: Vec<Arc<str>> = vec![Arc::clone(&root_key)];
+    let entry = fetch_catalog_cached(&client, &state, &key).await?;
 
+    let root_path: Vec<Arc<str>> = vec![Arc::clone(&key)];
     let fw_groups = build_framework_groups(&entry, &root_path);
 
-    // ── Emit Header immediately — this is the very first UI render ────────────
+    let id_arc: Arc<str> = entry.id.clone().into();
+    let version_arc: Arc<str> = entry.version.clone().into();
+
     let _ = on_event.send(NugetEvent::Header {
-        id: entry.id.clone(),
-        version: entry.version.clone(),
+        id: Arc::clone(&id_arc),
+        version: Arc::clone(&version_arc),
         framework_groups: fw_groups.clone(),
     });
 
-    // Claim the root so it is never re-emitted as PackageData later.
-    state.try_claim_emit(&entry.id, &entry.version);
+    state.try_claim_emit(&key);
     state.nodes.fetch_add(1, Ordering::Relaxed);
 
-    // Collect unique deps across all the root's framework groups and resolve them.
     let unique_deps = unique_deps_across_frameworks(&fw_groups);
 
     let futures: Vec<_> = unique_deps
@@ -288,23 +275,20 @@ async fn resolve_root(
     Ok(())
 }
 
-/// Recursively resolve one package, emitting a `PackageData` event exactly
-/// once per unique id+version across the entire resolution run.
 fn resolve_package(
     client: reqwest::Client,
     state: Arc<ResolveState>,
     on_event: Arc<Channel<NugetEvent>>,
-    id: String,
-    version: String,
+    id: Arc<str>,
+    version: Arc<str>,
     depth: u32,
     path: Vec<Arc<str>>,
 ) -> futures::future::BoxFuture<'static, ()> {
     Box::pin(async move {
         let key: Arc<str> = cache_key(&id, &version).into();
 
-        // ── Depth guard ────────────────────────────────────────────────────────
         if depth >= MAX_DEPTH {
-            if state.try_claim_emit(&id, &version) {
+            if state.try_claim_emit(&key) {
                 state.any_truncated.store(true, Ordering::Relaxed);
                 let _ = on_event.send(NugetEvent::PackageData {
                     id,
@@ -317,43 +301,33 @@ fn resolve_package(
             return;
         }
 
-        // ── Cycle guard ────────────────────────────────────────────────────────
-        // Circular deps are already flagged in parent's SimpleDep.circular so the
-        // frontend shows the badge.  Here we just stop recursion silently.
         if path.iter().any(|p| *p == key) {
             return;
         }
 
-        // Extend the branch path to include the current package.
         let mut child_path = path;
         child_path.push(Arc::clone(&key));
 
-        // ── Time budget (checked before making a network call) ─────────────────
         if state.is_time_up() {
-            if state.try_claim_emit(&id, &version) {
+            if state.try_claim_emit(&key) {
                 state.any_truncated.store(true, Ordering::Relaxed);
                 let _ = on_event.send(NugetEvent::PackageData {
                     id,
                     version,
                     framework_groups: vec![],
                     truncated: true,
-                    error: Some("time limit reached".into()),
+                    error: Some("Time limit reached".into()),
                 });
             }
             return;
         }
 
-        // ── Fetch catalog entry (serialised and cached per id+version) ─────────
-        let catalog_result = fetch_catalog_cached(&client, &state, &id, &version).await;
+        let catalog_result = fetch_catalog_cached(&client, &state, &key).await;
 
-        // ── Claim exclusive emit rights ────────────────────────────────────────
-        // Another branch that resolved this package first already emitted its
-        // PackageData; the frontend registry has the entry.
-        if !state.try_claim_emit(&id, &version) {
+        if !state.try_claim_emit(&key) {
             return;
         }
 
-        // ── Node budget (only counted for packages we actually emit) ───────────
         if state.nodes.fetch_add(1, Ordering::Relaxed) >= MAX_NODES {
             state.any_truncated.store(true, Ordering::Relaxed);
             let _ = on_event.send(NugetEvent::PackageData {
@@ -361,16 +335,14 @@ fn resolve_package(
                 version,
                 framework_groups: vec![],
                 truncated: true,
-                error: Some("node limit reached".into()),
+                error: Some("Node limit reached".into()),
             });
             return;
         }
 
-        // ── Build framework groups then decide whether to recurse ──────────────
         let (fw_groups, should_recurse) = match catalog_result {
             Err(e) => {
-                let is_budget =
-                    e.contains("time limit") || e.contains("node limit");
+                let is_budget = matches!(e, NugetError::Timeout | NugetError::NodeLimit);
                 if is_budget {
                     state.any_truncated.store(true, Ordering::Relaxed);
                 }
@@ -379,15 +351,15 @@ fn resolve_package(
                     version,
                     framework_groups: vec![],
                     truncated: is_budget,
-                    error: Some(e),
+                    error: Some(e.to_string()),
                 });
-                return; // nothing to recurse into
+                return;
             }
             Ok(entry) => {
                 let fgs = build_framework_groups(&entry, &child_path);
                 let _ = on_event.send(NugetEvent::PackageData {
-                    id: entry.id.clone(),
-                    version: entry.version.clone(),
+                    id: entry.id.clone().into(),
+                    version: entry.version.clone().into(),
                     framework_groups: fgs.clone(),
                     truncated: false,
                     error: None,
@@ -400,9 +372,7 @@ fn resolve_package(
             return;
         }
 
-        // ── Recurse into unique, non-circular deps ─────────────────────────────
-        // unique_deps_across_frameworks already skips deps marked circular.
-        let unique_deps: Vec<(String, String)> = unique_deps_across_frameworks(&fw_groups);
+        let unique_deps = unique_deps_across_frameworks(&fw_groups);
 
         let futures: Vec<_> = unique_deps
             .into_iter()
@@ -423,36 +393,58 @@ fn resolve_package(
     })
 }
 
-// ── Catalog fetch helpers ─────────────────────────────────────────────────────
+// ── Network & Catalog fetch helpers ───────────────────────────────────────────
 
-/// Fetch a catalog entry, ensuring at most one network request per id+version
-/// pair even when many branches race to resolve the same package.
+/// HTTP GET with Exponential Backoff for 429/5xx responses
+async fn get_with_retry(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<reqwest::Response, NugetError> {
+    let mut backoff = Duration::from_millis(500);
+
+    for attempt in 0..=MAX_RETRIES {
+        match client.get(url).send().await {
+            Ok(resp) => {
+                let status = resp.status();
+                if status.is_success() || status == 404 {
+                    return Ok(resp);
+                }
+                if attempt == MAX_RETRIES || (!status.is_server_error() && status != 429) {
+                    return Err(NugetError::Http(status.as_u16()));
+                }
+            }
+            Err(e) => {
+                if attempt == MAX_RETRIES {
+                    return Err(NugetError::Network(e.to_string()));
+                }
+            }
+        }
+        sleep(backoff).await;
+        backoff *= 2;
+    }
+    unreachable!()
+}
+
 async fn fetch_catalog_cached(
     client: &reqwest::Client,
     state: &Arc<ResolveState>,
-    id: &str,
-    version: &str,
+    key: &Arc<str>,
 ) -> CatalogResult {
-    let key = cache_key(id, version);
-
-    // Fast synchronous step: get or create the per-package async mutex.
     let entry_mutex: Arc<AsyncMutex<Option<CatalogResult>>> = {
         let mut cache = state.catalog_cache.lock().unwrap();
         cache
-            .entry(key)
+            .entry(Arc::clone(key))
             .or_insert_with(|| Arc::new(AsyncMutex::new(None)))
             .clone()
     };
 
-    // Async lock: the first task fetches; all others wait and read the result.
     let mut lock = entry_mutex.lock().await;
 
     if let Some(ref cached) = *lock {
         return cached.clone();
     }
 
-    // We are the first for this package — perform the actual fetch.
-    let result = fetch_catalog_entry_limited(client, state, id, version).await;
+    let result = fetch_catalog_entry_limited(client, state, key).await;
     *lock = Some(result.clone());
     result
 }
@@ -460,25 +452,22 @@ async fn fetch_catalog_cached(
 async fn fetch_catalog_entry_limited(
     client: &reqwest::Client,
     state: &Arc<ResolveState>,
-    id: &str,
-    version: &str,
+    key: &str,
 ) -> CatalogResult {
-    let remaining = state
-        .time_remaining()
-        .ok_or_else(|| "time limit reached".to_string())?;
+    let remaining = state.time_remaining().ok_or(NugetError::Timeout)?;
 
     let _permit = timeout(remaining, state.request_permits.acquire())
         .await
-        .map_err(|_| "time limit reached".to_string())?
-        .map_err(|_| "Dependency resolver stopped unexpectedly".to_string())?;
+        .map_err(|_| NugetError::Timeout)?
+        .map_err(|e| NugetError::Other(format!("Resolver stopped: {e}")))?;
 
-    let remaining = state
-        .time_remaining()
-        .ok_or_else(|| "time limit reached".to_string())?;
+    let remaining = state.time_remaining().ok_or(NugetError::Timeout)?;
+
+    let (id, version) = key.split_once('@').unwrap_or((key, ""));
 
     timeout(remaining, fetch_catalog_entry(client, id, version))
         .await
-        .map_err(|_| "time limit reached".to_string())?
+        .map_err(|_| NugetError::Timeout)?
         .map(Arc::new)
 }
 
@@ -486,26 +475,23 @@ async fn fetch_catalog_entry(
     client: &reqwest::Client,
     id: &str,
     version: &str,
-) -> Result<CatalogEntry, String> {
+) -> Result<CatalogEntry, NugetError> {
     let id_lower = id.to_lowercase();
     let ver_lower = version.to_lowercase();
 
     for base in &["registration5-semver1", "registration5-semver2"] {
         let url = format!("https://api.nuget.org/v3/{base}/{id_lower}/{ver_lower}.json");
-        let resp = match client.get(&url).send().await {
-            Ok(r) => r,
-            Err(e) => return Err(format!("Network error: {e}")),
-        };
+        let resp = get_with_retry(client, &url).await?;
+
         if resp.status() == 404 {
             continue;
         }
-        if !resp.status().is_success() {
-            return Err(format!("HTTP {}", resp.status()));
-        }
+
         let leaf: RegistrationLeaf = resp
             .json()
             .await
-            .map_err(|e| format!("Failed to parse leaf: {e}"))?;
+            .map_err(|e| NugetError::Parse(format!("Failed to parse leaf: {e}")))?;
+
         return fetch_catalog_ref(client, leaf.catalog_entry).await;
     }
 
@@ -515,73 +501,57 @@ async fn fetch_catalog_entry(
 async fn fetch_catalog_ref(
     client: &reqwest::Client,
     entry: CatalogEntryRef,
-) -> Result<CatalogEntry, String> {
+) -> Result<CatalogEntry, NugetError> {
     match entry {
-        CatalogEntryRef::Url(url) => fetch_catalog_url(client, &url).await,
+        CatalogEntryRef::Url(url) => {
+            let resp = get_with_retry(client, &url).await?;
+            resp.json()
+                .await
+                .map_err(|e| NugetError::Parse(format!("Failed to parse catalog entry: {e}")))
+        }
         CatalogEntryRef::Entry(e) => Ok(e),
     }
-}
-
-async fn fetch_catalog_url(
-    client: &reqwest::Client,
-    url: &str,
-) -> Result<CatalogEntry, String> {
-    let resp = client
-        .get(url)
-        .send()
-        .await
-        .map_err(|e| format!("Failed to fetch catalog entry: {e}"))?;
-    if !resp.status().is_success() {
-        return Err(format!("Catalog entry HTTP {}", resp.status()));
-    }
-    resp.json()
-        .await
-        .map_err(|e| format!("Failed to parse catalog entry: {e}"))
 }
 
 async fn fetch_from_index(
     client: &reqwest::Client,
     id: &str,
     version: &str,
-) -> Result<CatalogEntry, String> {
+) -> Result<CatalogEntry, NugetError> {
     let id_lower = id.to_lowercase();
 
     for base in &["registration5-semver1", "registration5-semver2"] {
         let url = format!("https://api.nuget.org/v3/{base}/{id_lower}/index.json");
-        let resp = match client.get(&url).send().await {
-            Ok(r) if r.status().is_success() => r,
-            Ok(r) if r.status() == 404 => continue,
-            Ok(r) => return Err(format!("Package '{id}' not found (HTTP {})", r.status())),
-            Err(e) => return Err(format!("Network error: {e}")),
-        };
+        let resp = get_with_retry(client, &url).await?;
+
+        if resp.status() == 404 {
+            continue;
+        }
 
         let index: Value = resp
             .json()
             .await
-            .map_err(|e| format!("Failed to parse index: {e}"))?;
+            .map_err(|e| NugetError::Parse(format!("Failed to parse index: {e}")))?;
 
         let pages = match index["items"].as_array() {
-            Some(p) => p.clone(),
+            Some(p) => p,
             None => continue,
         };
 
-        for page in &pages {
+        for page in pages {
             let lower = page["lower"].as_str().unwrap_or("");
             let upper = page["upper"].as_str().unwrap_or("");
-            if !lower.is_empty()
-                && !upper.is_empty()
-                && !version_in_range(version, lower, upper)
-            {
+            if !lower.is_empty() && !upper.is_empty() && !version_in_range(version, lower, upper) {
                 continue;
             }
 
             let items: Vec<Value> = if let Some(inline) = page["items"].as_array() {
                 inline.clone()
             } else if let Some(page_url) = page["@id"].as_str() {
-                let pr = match client.get(page_url).send().await {
-                    Ok(r) if r.status().is_success() => r,
-                    _ => continue,
-                };
+                let pr = get_with_retry(client, page_url).await?;
+                if !pr.status().is_success() {
+                    continue;
+                }
                 match pr.json::<Value>().await {
                     Ok(d) => d["items"].as_array().cloned().unwrap_or_default(),
                     Err(_) => continue,
@@ -596,7 +566,7 @@ async fn fetch_from_index(
                 }
                 let catalog_entry = match item.get("catalogEntry") {
                     Some(v) => serde_json::from_value::<CatalogEntryRef>(v.clone())
-                        .map_err(|e| format!("Failed to parse catalog entry ref: {e}"))?,
+                        .map_err(|e| NugetError::Parse(format!("Failed to parse catalog ref: {e}")))?,
                     None => continue,
                 };
                 return fetch_catalog_ref(client, catalog_entry).await;
@@ -604,16 +574,11 @@ async fn fetch_from_index(
         }
     }
 
-    Err(format!(
-        "Version '{version}' of '{id}' not found in registry"
-    ))
+    Err(NugetError::NotFound(version.to_string()))
 }
 
 // ── Framework group helpers ───────────────────────────────────────────────────
 
-/// Build the list of FrameworkGroups from a catalog entry.
-/// `branch_path` contains the id@version keys of all packages on the current
-/// resolution branch; any dep that appears in this set is flagged `circular`.
 fn build_framework_groups(
     entry: &CatalogEntry,
     branch_path: &[Arc<str>],
@@ -622,7 +587,7 @@ fn build_framework_groups(
         .dependency_groups
         .iter()
         .map(|g| {
-            let framework = normalize_fw(&g.target_framework);
+            let framework: Arc<str> = normalize_fw(&g.target_framework).into();
             let deps = g
                 .dependencies
                 .iter()
@@ -631,8 +596,8 @@ fn build_framework_groups(
                         let dep_key: Arc<str> = cache_key(&d.id, &ver).into();
                         let circular = branch_path.iter().any(|p| *p == dep_key);
                         SimpleDep {
-                            id: d.id.clone(),
-                            version: ver,
+                            id: d.id.clone().into(),
+                            version: ver.into(),
                             circular,
                         }
                     })
@@ -643,18 +608,17 @@ fn build_framework_groups(
         .collect()
 }
 
-/// Collect a deduplicated list of (id, version) pairs across all framework
-/// groups, skipping any dep marked `circular` (those are leaf badges only).
-fn unique_deps_across_frameworks(fw_groups: &[FrameworkGroup]) -> Vec<(String, String)> {
-    let mut seen: HashSet<String> = HashSet::new();
-    let mut result: Vec<(String, String)> = Vec::new();
+fn unique_deps_across_frameworks(fw_groups: &[FrameworkGroup]) -> Vec<(Arc<str>, Arc<str>)> {
+    let mut seen: HashSet<Arc<str>> = HashSet::new();
+    let mut result: Vec<(Arc<str>, Arc<str>)> = Vec::new();
     for fg in fw_groups {
         for dep in &fg.deps {
             if dep.circular {
                 continue;
             }
-            if seen.insert(cache_key(&dep.id, &dep.version)) {
-                result.push((dep.id.clone(), dep.version.clone()));
+            let key: Arc<str> = cache_key(&dep.id, &dep.version).into();
+            if seen.insert(key) {
+                result.push((Arc::clone(&dep.id), Arc::clone(&dep.version)));
             }
         }
     }
@@ -684,29 +648,56 @@ fn item_version(item: &Value) -> &str {
         .unwrap_or("")
 }
 
+// ── Robust NuGet Versioning ───────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct NugetVersion {
+    pub parts: [u64; 4],
+    pub prerelease: Option<String>,
+}
+
+impl Ord for NugetVersion {
+    fn cmp(&self, other: &Self) -> CmpOrdering {
+        match self.parts.cmp(&other.parts) {
+            CmpOrdering::Equal => {
+                match (&self.prerelease, &other.prerelease) {
+                    (None, None) => CmpOrdering::Equal,
+                    (None, Some(_)) => CmpOrdering::Greater, // Stable > Pre-release
+                    (Some(_), None) => CmpOrdering::Less,    // Pre-release < Stable
+                    (Some(a), Some(b)) => a.cmp(b),          // Lexicographical fallback
+                }
+            }
+            other_cmp => other_cmp,
+        }
+    }
+}
+
+impl PartialOrd for NugetVersion {
+    fn partial_cmp(&self, other: &Self) -> Option<CmpOrdering> {
+        Some(self.cmp(other))
+    }
+}
+
+fn parse_nuver(v: &str) -> NugetVersion {
+    let mut split = v.splitn(2, ['-', '+']);
+    let main_part = split.next().unwrap_or("");
+    let prerelease = split.next().map(|s| s.to_string());
+
+    let mut parts = [0u64; 4];
+    for (i, p) in main_part.split('.').take(4).enumerate() {
+        parts[i] = p.parse().unwrap_or(0);
+    }
+
+    NugetVersion { parts, prerelease }
+}
+
 fn version_in_range(version: &str, lower: &str, upper: &str) -> bool {
-    let v = ver_tuple(version);
-    v >= ver_tuple(lower) && v <= ver_tuple(upper)
+    let v = parse_nuver(version);
+    v >= parse_nuver(lower) && v <= parse_nuver(upper)
 }
 
 fn versions_match(a: &str, b: &str) -> bool {
-    ver_tuple(a) == ver_tuple(b)
-}
-
-fn ver_tuple(v: &str) -> (u64, u64, u64, u64) {
-    let mut parts = v.split('.').map(|p| {
-        p.split(['-', '+'])
-            .next()
-            .unwrap_or("")
-            .parse::<u64>()
-            .unwrap_or(0)
-    });
-    (
-        parts.next().unwrap_or(0),
-        parts.next().unwrap_or(0),
-        parts.next().unwrap_or(0),
-        parts.next().unwrap_or(0),
-    )
+    parse_nuver(a) == parse_nuver(b)
 }
 
 pub fn min_version_from_range(range: &str) -> Option<String> {

@@ -784,6 +784,7 @@ dependencies = [
  "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-updater",
+ "thiserror 2.0.18",
  "tokio",
 ]
 
