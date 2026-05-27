@@ -49,7 +49,7 @@ npm install -g @tauri-apps/cli@latest
 
 1. Create a focused branch for your change.
 2. Keep each change scoped to one feature, bug fix, or documentation improvement.
-3. Update docs when behavior, setup steps, shortcuts, or tool availability changes.
+3. Update docs when behaviour, setup steps, shortcuts, or tool availability changes.
 4. Run the relevant checks before opening a pull request.
 5. Describe what changed, why it changed, and how you tested it.
 
@@ -76,7 +76,7 @@ If a check cannot be run locally, call that out in your pull request and explain
 
 - Prefer existing Angular standalone component patterns and lazy-loaded routes.
 - Keep tool logic close to the tool component unless it is shared by multiple tools.
-- Use services in `src/app/core/services/` for shared app behavior such as settings, search, and pinned tools.
+- Use services in `src/app/core/services/` for shared app behaviour such as settings, search, and pinned tools.
 - Keep sensitive data local. Do not introduce telemetry, remote processing, or network calls without a clear reason and documentation.
 - Avoid adding large dependencies when a small local implementation or existing dependency is enough.
 - Preserve keyboard accessibility and clear focus states for interactive UI.
@@ -88,7 +88,7 @@ When adding a new utility:
 
 1. Add the tool component under `src/app/tools/<tool-name>/`.
 2. Register the route in `src/app/app.routes.ts`.
-3. Add catalog metadata and search keywords in `src/app/core/tool-catalog.ts`.
+3. Add catalogue metadata and search keywords in `src/app/core/tool-catalog.ts`.
 4. Use Tauri `invoke` only when the tool needs native capabilities.
 5. Add or update tests when the tool has non-trivial parsing, conversion, or validation logic.
 6. Update `README.md` if the tool changes the project feature list or category coverage.
@@ -97,7 +97,7 @@ When adding a new utility:
 
 - Register new commands in `src-tauri/src/lib.rs`.
 - Place command implementations under `src-tauri/src/commands/`.
-- Keep command inputs and outputs serializable with `serde`.
+- Keep command inputs and outputs serialisable with `serde`.
 - Return useful errors instead of panicking on invalid user input.
 - Update Tauri capabilities or permissions when a plugin or command requires new access.
 

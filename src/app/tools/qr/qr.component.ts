@@ -189,9 +189,9 @@ interface QROptions {
         <div style="font-size:11px;color:var(--text-faint);margin-top:4px">{{ selectedEcDesc() }}</div>
       </div>
 
-      <!-- Colors -->
+      <!-- Colours -->
       <div>
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Colors</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Colours</div>
         <div style="display:flex;gap:10px">
           <div style="flex:1">
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Foreground</div>
@@ -244,7 +244,7 @@ export class QrComponent {
     { key: 'name', label: 'Full name', placeholder: 'Jane Doe' },
     { key: 'phone', label: 'Phone', placeholder: '+1 555 0100' },
     { key: 'email', label: 'Email', placeholder: 'jane@example.com' },
-    { key: 'org', label: 'Organization', placeholder: 'Acme Corp' },
+    { key: 'org', label: 'Organisation', placeholder: 'Acme Corp' },
     { key: 'url', label: 'Website', placeholder: 'https://example.com' },
   ];
 

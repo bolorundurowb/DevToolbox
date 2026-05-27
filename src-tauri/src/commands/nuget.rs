@@ -393,7 +393,7 @@ fn resolve_package(
     })
 }
 
-// ── Network & Catalog fetch helpers ───────────────────────────────────────────
+// ── Network & Catalogue fetch helpers ─────────────────────────────────────────
 
 /// HTTP GET with Exponential Backoff for 429/5xx responses
 async fn get_with_retry(
@@ -507,7 +507,7 @@ async fn fetch_catalog_ref(
             let resp = get_with_retry(client, &url).await?;
             resp.json()
                 .await
-                .map_err(|e| NugetError::Parse(format!("Failed to parse catalog entry: {e}")))
+                .map_err(|e| NugetError::Parse(format!("Failed to parse catalogue entry: {e}")))
         }
         CatalogEntryRef::Entry(e) => Ok(e),
     }
@@ -566,7 +566,7 @@ async fn fetch_from_index(
                 }
                 let catalog_entry = match item.get("catalogEntry") {
                     Some(v) => serde_json::from_value::<CatalogEntryRef>(v.clone())
-                        .map_err(|e| NugetError::Parse(format!("Failed to parse catalog ref: {e}")))?,
+                        .map_err(|e| NugetError::Parse(format!("Failed to parse catalogue ref: {e}")))?,
                     None => continue,
                 };
                 return fetch_catalog_ref(client, catalog_entry).await;

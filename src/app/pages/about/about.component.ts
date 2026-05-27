@@ -165,7 +165,7 @@ type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'e
 
         <!-- Footer -->
         <div style="font-size:11.5px;color:var(--text-faint);font-family:var(--font-mono);padding:14px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">
-          Released under the MIT License &middot; &copy; 2026 Dev Core Tools contributors
+          Released under the MIT Licence &middot; &copy; 2026 Dev Core Tools contributors
         </div>
 
       </div>

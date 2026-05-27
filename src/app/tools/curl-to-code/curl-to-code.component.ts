@@ -15,25 +15,25 @@ interface ParsedCurl {
 
 function parseCurl(cmd: string): ParsedCurl {
   const result: ParsedCurl = { url: '', method: 'GET', headers: {}, body: null, auth: null, insecure: false, compressed: false };
-  // Normalize line continuations
-  const normalized = cmd.replace(/\\\s*\n\s*/g, ' ').trim();
-  // Tokenize respecting quotes
+  // Normalise line continuations
+  const normalised = cmd.replace(/\\\s*\n\s*/g, ' ').trim();
+  // Tokenise respecting quotes
   const tokens: string[] = [];
   let i = 0;
-  while (i < normalized.length) {
-    while (i < normalized.length && normalized[i] === ' ') i++;
-    if (i >= normalized.length) break;
+  while (i < normalised.length) {
+    while (i < normalised.length && normalised[i] === ' ') i++;
+    if (i >= normalised.length) break;
     let token = '';
-    if (normalized[i] === '"' || normalized[i] === "'") {
-      const q = normalized[i++];
-      while (i < normalized.length && normalized[i] !== q) {
-        if (normalized[i] === '\\' && i + 1 < normalized.length) { i++; token += normalized[i]; }
-        else token += normalized[i];
+    if (normalised[i] === '"' || normalised[i] === "'") {
+      const q = normalised[i++];
+      while (i < normalised.length && normalised[i] !== q) {
+        if (normalised[i] === '\\' && i + 1 < normalised.length) { i++; token += normalised[i]; }
+        else token += normalised[i];
         i++;
       }
       i++; // closing quote
     } else {
-      while (i < normalized.length && normalized[i] !== ' ') token += normalized[i++];
+      while (i < normalised.length && normalised[i] !== ' ') token += normalised[i++];
     }
     tokens.push(token);
   }

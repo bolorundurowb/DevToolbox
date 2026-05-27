@@ -246,7 +246,7 @@ export class SvgExporterComponent implements OnDestroy {
     this.exportedInfo.set('');
 
     try {
-      const blob = await this.rasterize(svg);
+      const blob = await this.rasterise(svg);
       const ext = this.format() === 'PNG' ? 'png' : 'jpg';
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
@@ -260,7 +260,7 @@ export class SvgExporterComponent implements OnDestroy {
     }
   }
 
-  private rasterize(svg: string): Promise<Blob> {
+  private rasterise(svg: string): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(svgBlob);

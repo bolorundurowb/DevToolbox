@@ -139,7 +139,7 @@ function compressIpv6(addr: string): string {
     </div>
     <div>
       <div style="font-size:15px;font-weight:600">IP / CIDR Calculator</div>
-      <div style="font-size:12px;color:var(--text-muted)">Analyze IP addresses, subnets, and CIDR ranges</div>
+      <div style="font-size:12px;color:var(--text-muted)">Analyse IP addresses, subnets, and CIDR ranges</div>
     </div>
   </div>
 
@@ -149,7 +149,7 @@ function compressIpv6(addr: string): string {
       IP Address or CIDR
     </div>
     <div style="display:flex;gap:10px;align-items:center">
-      <input type="text" [(ngModel)]="inputValue" (ngModelChange)="analyze()"
+      <input type="text" [(ngModel)]="inputValue" (ngModelChange)="analyse()"
         placeholder="e.g. 192.168.1.0/24 or 10.0.0.1 or 2001:db8::1"
         style="flex:1;border:2px solid var(--border);border-radius:8px;padding:10px 14px;font-size:15px;font-family:var(--font-mono);background:var(--bg);color:var(--text);box-sizing:border-box;outline:none"
         [style.border-color]="errorMsg() ? '#e05' : 'var(--border)'" />
@@ -268,11 +268,11 @@ export class IpCidrComponent {
     { label: '::1', value: '::1' },
   ];
 
-  constructor() { this.analyze(); }
+  constructor() { this.analyse(); }
 
-  setInput(v: string) { this.inputValue = v; this.analyze(); }
+  setInput(v: string) { this.inputValue = v; this.analyse(); }
 
-  analyze() {
+  analyse() {
     this.errorMsg.set('');
     this.result.set(null);
     this.ipv6Result.set(null);

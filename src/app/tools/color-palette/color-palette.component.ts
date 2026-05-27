@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { IconComponent } from '../../core/icon.component';
 
-/* ── Color math helpers ───────────────────────────────────────────────── */
+/* ── Colour math helpers ───────────────────────────────────────────────── */
 function hexToRgb(hex: string): [number, number, number] | null {
   const h = hex.replace('#', '');
   if (!/^[0-9a-f]{6}$/i.test(h)) return null;
@@ -141,14 +141,14 @@ function generatePalette(hex: string, mode: HarmonyMode): Swatch[] {
     case 'tetradic': {
       const h2 = h+90, h3 = h+180, h4 = h+270;
       return [
-        makeSwatch(h,  s, l,  'Color 1'),
-        makeSwatch(h2, s, l,  'Color 2'),
-        makeSwatch(h3, s, l,  'Color 3'),
-        makeSwatch(h4, s, l,  'Color 4'),
-        makeSwatch(h,  s*0.65, Math.min(l+28,90), 'Color 1 Light'),
-        makeSwatch(h2, s*0.65, Math.min(l+28,90), 'Color 2 Light'),
-        makeSwatch(h3, s*0.65, Math.min(l+28,90), 'Color 3 Light'),
-        makeSwatch(h4, s*0.65, Math.min(l+28,90), 'Color 4 Light'),
+        makeSwatch(h,  s, l,  'Colour 1'),
+        makeSwatch(h2, s, l,  'Colour 2'),
+        makeSwatch(h3, s, l,  'Colour 3'),
+        makeSwatch(h4, s, l,  'Colour 4'),
+        makeSwatch(h,  s*0.65, Math.min(l+28,90), 'Colour 1 Light'),
+        makeSwatch(h2, s*0.65, Math.min(l+28,90), 'Colour 2 Light'),
+        makeSwatch(h3, s*0.65, Math.min(l+28,90), 'Colour 3 Light'),
+        makeSwatch(h4, s*0.65, Math.min(l+28,90), 'Colour 4 Light'),
       ];
     }
     case 'split-complementary': {
@@ -258,7 +258,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
   `],
   template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-ui)">
-  <dt-topbar [crumbs]="['Images', 'Color Palette Generator']" toolId="palette-gen" />
+  <dt-topbar [crumbs]="['Images', 'Colour Palette Generator']" toolId="palette-gen" />
 
   <div style="flex:1;overflow:auto;padding:28px 36px 40px">
     <div style="max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
@@ -268,7 +268,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
 
         <!-- Base colour picker -->
         <div style="display:flex;flex-direction:column;gap:8px">
-          <label style="font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px">Base Color</label>
+          <label style="font-size:11.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px">Base Colour</label>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="position:relative;width:44px;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--border);flex-shrink:0">
               <input type="color" [(ngModel)]="baseHex" (ngModelChange)="onColorPick($event)"
@@ -330,7 +330,7 @@ const MODES: { id: HarmonyMode; label: string; desc: string }[] = [
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
             @for (sw of palette(); track sw.hex) {
               <div class="swatch-card">
-                <!-- Color block -->
+                <!-- Colour block -->
                 <div style="height:80px;display:flex;align-items:flex-end;padding:8px"
                   [style.background]="sw.hex">
                   <span style="font-size:10.5px;font-weight:600;font-family:var(--font-mono);opacity:0.85;letter-spacing:.3px"
@@ -407,7 +407,7 @@ export class ColorPaletteComponent {
     if (!swatches.length) return '';
     const slug = this.mode().replace(/-/g, '_');
     const lines = swatches.map((s, i) =>
-      `  --color-${slug}-${i+1}: ${s.hex};   /* ${s.label} */`
+      `  --colour-${slug}-${i+1}: ${s.hex};   /* ${s.label} */`
     );
     return `:root {\n${lines.join('\n')}\n}`;
   });

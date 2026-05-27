@@ -39,7 +39,7 @@ const STATUS_CODES: StatusCode[] = [
     name: 'Early Hints',
     desc: 'Allows the server to send preliminary response headers before the final response, enabling the client to preload resources while the server prepares the full response.',
     rfc: 'RFC 8297',
-    uses: ['Resource preloading', 'Link preconnect hints', 'Performance optimization'],
+    uses: ['Resource preloading', 'Link preconnect hints', 'Performance optimisation'],
   },
 
   // 2xx Success
@@ -148,7 +148,7 @@ const STATUS_CODES: StatusCode[] = [
     name: 'Not Modified',
     desc: 'Indicates that the resource has not been modified since the version specified by the request headers If-Modified-Since or If-None-Match.',
     rfc: 'RFC 9110 §15.4.5',
-    uses: ['Browser cache validation', 'ETag conditional GET', 'Bandwidth optimization'],
+    uses: ['Browser cache validation', 'ETag conditional GET', 'Bandwidth optimisation'],
   },
   {
     code: 307,
@@ -190,14 +190,14 @@ const STATUS_CODES: StatusCode[] = [
   {
     code: 403,
     name: 'Forbidden',
-    desc: 'The server understood the request but refuses to authorize it. Unlike 401, re-authenticating will not help; the client lacks permission.',
+    desc: 'The server understood the request but refuses to authorise it. Unlike 401, re-authenticating will not help; the client lacks permission.',
     rfc: 'RFC 9110 §15.5.4',
     uses: ['Insufficient permissions', 'IP blocklist', 'Role-based access denial'],
   },
   {
     code: 404,
     name: 'Not Found',
-    desc: 'The server cannot find the requested resource. The URL is not recognized, or the resource does not exist at that path.',
+    desc: 'The server cannot find the requested resource. The URL is not recognised, or the resource does not exist at that path.',
     rfc: 'RFC 9110 §15.5.5',
     uses: ['Missing resource', 'Deleted record', 'Typo in URL path'],
   },
@@ -381,7 +381,7 @@ const STATUS_CODES: StatusCode[] = [
   {
     code: 501,
     name: 'Not Implemented',
-    desc: 'The server does not support the functionality required to fulfill the request, such as an HTTP method it does not recognize or support.',
+    desc: 'The server does not support the functionality required to fulfil the request, such as an HTTP method it does not recognise or support.',
     rfc: 'RFC 9110 §15.6.2',
     uses: ['Unsupported HTTP method', 'Unimplemented feature', 'Future endpoint placeholder'],
   },
