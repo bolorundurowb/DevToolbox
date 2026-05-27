@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
-import type { LocaleCode } from '../i18n/i18n.types';
+import { SUPPORTED_LOCALES, type LocaleCode } from '../i18n/i18n.types';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type AccentColor = '#7a2436' | '#1c4a4f' | '#5b3a8a' | '#8a6515' | '#2f6b35' | '#1a3a5c' | '#a0430f' | '#9d2d72';
@@ -108,7 +108,7 @@ function cleanDisplayName(value: unknown): string {
 }
 
 function cleanLocale(value: unknown): LocaleCode {
-  return value === 'en-GB' ? value : DEFAULTS.locale;
+  return SUPPORTED_LOCALES.includes(value as LocaleCode) ? value as LocaleCode : DEFAULTS.locale;
 }
 
 @Injectable({ providedIn: 'root' })

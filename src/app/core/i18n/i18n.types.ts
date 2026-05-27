@@ -1,4 +1,6 @@
-export type LocaleCode = 'en-GB';
+export type LocaleCode = 'en-GB' | 'es-ES' | 'zh-CN' | 'fr-FR' | 'ru-RU';
+
+export const SUPPORTED_LOCALES: readonly LocaleCode[] = ['en-GB', 'es-ES', 'zh-CN', 'fr-FR', 'ru-RU'];
 
 export interface LocaleDefinition {
   code: LocaleCode;

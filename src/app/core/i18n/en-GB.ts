@@ -2,6 +2,10 @@ import type { TranslationDictionary } from './i18n.types';
 
 export const EN_GB: TranslationDictionary = {
   'app.locale.en-GB': 'English (UK)',
+  'app.locale.es-ES': 'Spanish',
+  'app.locale.zh-CN': 'Mandarin Chinese',
+  'app.locale.fr-FR': 'French',
+  'app.locale.ru-RU': 'Russian',
 
   'common.clear': 'Clear',
   'common.copy': 'Copy',
