@@ -15,6 +15,7 @@ import { IconComponent } from '../../core/icon.component';
 import { SearchService } from '../../core/services/search.service';
 import { SettingsService } from '../../core/services/settings.service';
 import type { Tool } from '../../core/tool-catalog';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'dt-command-palette',
@@ -164,7 +165,7 @@ import type { Tool } from '../../core/tool-catalog';
                     [style.font-size.px]="13"
                     [style.font-weight]="500"
                     [style.font-family]="'var(--font-ui)'"
-                    [innerHTML]="highlightMatch(tool.name)"
+                    [innerHTML]="highlightMatch(translate(tool.name))"
                   ></span>
                   <span
                     [style.font-size.px]="11.5"
@@ -176,9 +177,9 @@ import type { Tool } from '../../core/tool-catalog';
                     [style.font-family]="'var(--font-ui)'"
                     class="truncate"
                   >
-                    <span [style.opacity]="0.7">{{ tool.catName }}</span>
+                    <span [style.opacity]="0.7">{{ translate(tool.catName) }}</span>
                     <span [style.opacity]="0.5"> · </span>
-                    {{ tool.desc }}
+                    {{ translate(tool.desc) }}
                   </span>
                 </div>
 
@@ -271,6 +272,7 @@ import type { Tool } from '../../core/tool-catalog';
 })
 export class CommandPaletteComponent {
   readonly searchService = inject(SearchService);
+  private readonly i18n = inject(I18nService);
 
   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
 
@@ -328,6 +330,10 @@ export class CommandPaletteComponent {
 
   setSelected(idx: number): void {
     this.searchService['selectedIndex'].set(idx);
+  }
+
+  translate(value: string): string {
+    return this.i18n.translateText(value);
   }
 
   highlightMatch(text: string): string {

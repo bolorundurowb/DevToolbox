@@ -75,7 +75,7 @@ export class HistoryService {
   }
 }
 
-/** Convenience: resolve a toolId to its catalog entry */
+/** Convenience: resolve a toolId to its catalogue entry */
 export function toolById(id: string) {
   return TOOL_BY_ID[id] ?? null;
 }

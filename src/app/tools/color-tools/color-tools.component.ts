@@ -110,25 +110,25 @@ function makeHarmonies(hsl: HSL) {
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Images', 'Color Tools']" [toolId]="'color'" />
+  <dt-topbar [crumbs]="['Images', 'Colour Tools']" [toolId]="'color'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
       <dt-icon name="palette" [size]="16" color="var(--maroon)" />
     </div>
     <div>
-      <div style="font-size:15px;font-weight:600">Color Tools</div>
-      <div style="font-size:12px;color:var(--text-muted)">Convert, analyze, and explore colors</div>
+      <div style="font-size:15px;font-weight:600">Colour Tools</div>
+      <div style="font-size:12px;color:var(--text-muted)">Convert, analyse, and explore colours</div>
     </div>
   </div>
 
   <div style="flex:1;min-height:0;overflow-y:auto;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
-    <!-- Primary color input -->
+    <!-- Primary colour input -->
     <div style="display:flex;flex-direction:column;gap:16px">
 
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Color Input</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Colour Input</div>
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">
           <input type="color" [value]="hexInput()" (input)="onColorPicker($event)"
             style="width:52px;height:52px;border-radius:8px;border:2px solid var(--border);cursor:pointer;padding:2px;background:transparent" />
@@ -200,9 +200,9 @@ function makeHarmonies(hsl: HSL) {
         </div>
       </div>
 
-      <!-- Color harmonies -->
+      <!-- Colour harmonies -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Color Harmonies</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Colour Harmonies</div>
         @for (group of harmonyGroups(); track group.label) {
           <div style="margin-bottom:12px">
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">{{ group.label }}</div>

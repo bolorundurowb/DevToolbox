@@ -165,7 +165,7 @@ type UpdateStatus = 'idle' | 'checking' | 'up-to-date' | 'update-available' | 'e
 
         <!-- Footer -->
         <div style="font-size:11.5px;color:var(--text-faint);font-family:var(--font-mono);padding:14px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--border)">
-          Released under the MIT License &middot; &copy; 2026 Dev Core Tools contributors
+          Released under the MIT Licence &middot; &copy; 2026 Dev Core Tools contributors
         </div>
 
       </div>
@@ -194,6 +194,7 @@ export class AboutComponent implements OnInit {
   readonly arch     = navigator.platform.includes('arm') || navigator.platform.includes('M1') ? 'Apple Silicon' : 'x64';
 
   readonly updatePrefs = [
+    { key: 'autoCheckUpdates' as const, label: 'Check for updates automatically', desc: 'Periodically check for new versions and notify you' },
     { key: 'includeBeta' as const, label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
@@ -221,11 +222,11 @@ export class AboutComponent implements OnInit {
     if (label !== 'About') this.router.navigate(['/settings']);
   }
 
-  getPref(key: 'includeBeta'): boolean {
+  getPref(key: 'autoCheckUpdates' | 'includeBeta'): boolean {
     return this.svc.settings()[key];
   }
 
-  togglePref(key: 'includeBeta'): void {
+  togglePref(key: 'autoCheckUpdates' | 'includeBeta'): void {
     this.svc.update({ [key]: !this.svc.settings()[key] } as any);
   }
 

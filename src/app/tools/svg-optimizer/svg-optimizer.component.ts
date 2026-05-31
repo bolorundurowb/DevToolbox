@@ -23,20 +23,20 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
     styles: [`:host{display:flex;flex-direction:column;flex:1;min-height:0}`],
     template: `
 <div style="flex:1;display:flex;flex-direction:column;min-height:0;background:var(--bg)">
-  <dt-topbar [crumbs]="['Images', 'SVG Optimizer']" [toolId]="'svg-opt'" />
+  <dt-topbar [crumbs]="['Images', 'SVG Optimiser']" [toolId]="'svg-opt'" />
 
   <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
     <div style="width:32px;height:32px;border-radius:8px;background:var(--maroon-soft);display:grid;place-items:center">
       <dt-icon name="svg" [size]="16" color="var(--maroon)" />
     </div>
     <div>
-      <div style="font-size:15px;font-weight:600">SVG Optimizer</div>
+      <div style="font-size:15px;font-weight:600">SVG Optimiser</div>
       <div style="font-size:12px;color:var(--text-muted)">Minify and clean SVG files using SVGO</div>
     </div>
     <div style="flex:1"></div>
-    <button (click)="optimize()" [style.opacity]="!inputSvg().trim() ? '0.45' : '1'"
+    <button (click)="optimise()" [style.opacity]="!inputSvg().trim() ? '0.45' : '1'"
       style="background:var(--maroon);color:#fff;height:28px;padding:0 14px;border-radius:7px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-      <dt-icon name="rocket" [size]="12" color="#fff" /> Optimize
+      <dt-icon name="rocket" [size]="12" color="#fff" /> Optimise
     </button>
   </div>
 
@@ -82,7 +82,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
         </div>
         <div style="flex:1;min-width:0;display:flex;flex-direction:column">
           <div style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
-            Optimized SVG
+            Optimised SVG
             @if (optimizedSize()) {
               <span style="background:var(--teal-soft);color:var(--teal-ink);padding:1px 7px;border-radius:10px;font-weight:400">{{ formatSize(optimizedSize()) }}</span>
             }
@@ -137,7 +137,7 @@ const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="
           <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px">Stats</div>
           <div style="font-size:12px;display:flex;flex-direction:column;gap:5px">
             <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Original</span><span>{{ formatSize(originalSize()) }}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Optimized</span><span style="color:var(--teal)">{{ formatSize(optimizedSize()) }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Optimised</span><span style="color:var(--teal)">{{ formatSize(optimizedSize()) }}</span></div>
             <div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Savings</span>
               <span [style.color]="savingPct() > 0 ? 'var(--teal)' : '#e05'">{{ savingPct() > 0 ? '-' : '+' }}{{ Math.abs(savingPct()) }}%</span>
             </div>
@@ -200,7 +200,7 @@ export class SvgOptimizerComponent {
     reader.readAsText(file);
   }
 
-  optimize() {
+  optimise() {
     const svg = this.inputSvg().trim();
     if (!svg) return;
     this.errorMsg.set('');
@@ -238,7 +238,7 @@ export class SvgOptimizerComponent {
         this.outputSvg.set(out);
         this.optimizedSize.set(new Blob([out]).size);
       } catch (err2) {
-        this.errorMsg.set('Optimization failed: ' + String(err2));
+        this.errorMsg.set('Optimisation failed: ' + String(err2));
       }
     });
   }
@@ -254,7 +254,7 @@ export class SvgOptimizerComponent {
     const blob = new Blob([this.outputSvg()], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'optimized.svg'; a.click();
+    a.href = url; a.download = 'optimised.svg'; a.click();
     URL.revokeObjectURL(url);
   }
 }

@@ -5,15 +5,17 @@ import { filter } from 'rxjs/operators';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { CommandPaletteComponent } from '../command-palette/command-palette.component';
 import { WindowControlsComponent } from '../window-controls/window-controls.component';
+import { ToastContainerComponent } from '../toast/toast-container.component';
 import { SearchService } from '../../core/services/search.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { PinnedService } from '../../core/services/pinned.service';
 import { HistoryService } from '../../core/services/history.service';
+import { UpdateCheckService } from '../../core/services/update-check.service';
 import { ALL_TOOLS } from '../../core/tool-catalog';
 
 @Component({
   selector: 'dt-shell',
-  imports: [RouterModule, SidebarComponent, CommandPaletteComponent, WindowControlsComponent],
+  imports: [RouterModule, SidebarComponent, CommandPaletteComponent, WindowControlsComponent, ToastContainerComponent],
   template: `
     <div
       class="flex flex-col h-screen overflow-hidden"
@@ -38,6 +40,9 @@ import { ALL_TOOLS } from '../../core/tool-catalog';
 
       <!-- Command palette overlay (portal-like, z-indexed above everything) -->
       <dt-command-palette />
+
+      <!-- Toast notifications -->
+      <dt-toast-container />
     </div>
   `,
 })
@@ -51,6 +56,8 @@ export class ShellComponent {
   constructor() {
     const pinnedService = inject(PinnedService);
     const historySvc = inject(HistoryService);
+    const updateCheckService = inject(UpdateCheckService);
+    updateCheckService.start();
 
     this.router.events
       .pipe(filter((e) => e instanceof NavigationEnd))

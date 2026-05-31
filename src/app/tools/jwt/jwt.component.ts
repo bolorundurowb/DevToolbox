@@ -32,7 +32,7 @@ interface JwtParsed {
   </div>
 
   <div style="flex:1;min-height:0;display:flex;overflow:hidden">
-    <!-- Left: input + colored token + verify -->
+    <!-- Left: input + coloured token + verify -->
     <div style="width:42%;min-width:280px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto">
       <!-- Token input -->
       <div style="padding:12px 14px 0">
@@ -41,7 +41,7 @@ interface JwtParsed {
           placeholder="Paste your JWT token here…"
           style="width:100%;height:120px;resize:none;border:1px solid var(--border);border-radius:7px;outline:none;padding:10px;font-family:var(--font-mono);font-size:12px;background:var(--surface);color:var(--text);line-height:1.5;box-sizing:border-box"></textarea>
       </div>
-      <!-- Color-coded token display -->
+      <!-- Colour-coded token display -->
       @if (parsed()) {
         <div style="margin:10px 14px;padding:10px 12px;background:var(--surface);border-radius:7px;font-family:var(--font-mono);font-size:11.5px;word-break:break-all;line-height:1.6;border:1px solid var(--border)">
           <span style="color:var(--maroon)">{{ parsed()!.rawParts[0] }}</span>.<span style="color:var(--teal)">{{ parsed()!.rawParts[1] }}</span>.<span style="color:var(--text-faint)">{{ parsed()!.rawParts[2] }}</span>

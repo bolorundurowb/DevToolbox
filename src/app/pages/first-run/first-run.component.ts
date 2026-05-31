@@ -14,20 +14,20 @@ interface SystemInfo {
 }
 
 function formatOs(os: string): string {
-  const normalized = os.toLowerCase();
-  if (normalized === 'windows') return 'Windows';
-  if (normalized === 'macos' || normalized === 'darwin') return 'macOS';
-  if (normalized === 'linux') return 'Linux';
-  if (normalized === 'ios') return 'iOS';
-  if (normalized === 'android') return 'Android';
+  const normalised = os.toLowerCase();
+  if (normalised === 'windows') return 'Windows';
+  if (normalised === 'macos' || normalised === 'darwin') return 'macOS';
+  if (normalised === 'linux') return 'Linux';
+  if (normalised === 'ios') return 'iOS';
+  if (normalised === 'android') return 'Android';
   return os || 'Unknown OS';
 }
 
 function formatArch(arch: string): string {
-  const normalized = arch.toLowerCase();
-  if (['x86_64', 'amd64'].includes(normalized)) return 'x64';
-  if (['aarch64', 'arm64'].includes(normalized)) return 'ARM64';
-  if (normalized === 'x86') return 'x86';
+  const normalised = arch.toLowerCase();
+  if (['x86_64', 'amd64'].includes(normalised)) return 'x64';
+  if (['aarch64', 'arm64'].includes(normalised)) return 'ARM64';
+  if (normalised === 'x86') return 'x86';
   return arch || 'Unknown CPU';
 }
 
@@ -175,7 +175,7 @@ function formatArch(arch: string): string {
               <div
                 style="font-size:12px; color:var(--text-muted); margin-top:2px; font-family:var(--font-ui);"
               >
-                Your favorites live in the sidebar for one-click access
+                Your favourites live in the sidebar for one-click access
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { IconComponent } from '../../core/icon.component';
 
 // ── Case conversion functions ──────────────────────────────────────────────
 
-function tokenize(s: string): string[] {
+function tokenise(s: string): string[] {
   return s
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
@@ -17,24 +17,24 @@ function tokenize(s: string): string[] {
 }
 
 function toCamel(s: string): string {
-  const tokens = tokenize(s);
+  const tokens = tokenise(s);
   return tokens.map((t, i) => i === 0 ? t : t[0].toUpperCase() + t.slice(1)).join('');
 }
 function toPascal(s: string): string {
-  return tokenize(s).map(t => t[0].toUpperCase() + t.slice(1)).join('');
+  return tokenise(s).map(t => t[0].toUpperCase() + t.slice(1)).join('');
 }
-function toSnake(s: string): string { return tokenize(s).join('_'); }
-function toKebab(s: string): string { return tokenize(s).join('-'); }
-function toScreaming(s: string): string { return tokenize(s).join('_').toUpperCase(); }
+function toSnake(s: string): string { return tokenise(s).join('_'); }
+function toKebab(s: string): string { return tokenise(s).join('-'); }
+function toScreaming(s: string): string { return tokenise(s).join('_').toUpperCase(); }
 function toTitle(s: string): string {
-  return tokenize(s).map(t => t[0].toUpperCase() + t.slice(1)).join(' ');
+  return tokenise(s).map(t => t[0].toUpperCase() + t.slice(1)).join(' ');
 }
 function toUpper(s: string): string { return s.toUpperCase(); }
 function toLower(s: string): string { return s.toLowerCase(); }
-function toDot(s: string): string { return tokenize(s).join('.'); }
-function toPath(s: string): string { return tokenize(s).join('/'); }
+function toDot(s: string): string { return tokenise(s).join('.'); }
+function toPath(s: string): string { return tokenise(s).join('/'); }
 function toSentence(s: string): string {
-  const flat = tokenize(s).join(' ');
+  const flat = tokenise(s).join(' ');
   return flat ? flat[0].toUpperCase() + flat.slice(1) : '';
 }
 function toConstant(s: string): string { return toScreaming(s); }
@@ -137,7 +137,7 @@ export class TextCaseComponent {
   tokenCount = computed(() => {
     const s = this.inputVal().trim();
     if (!s) return 0;
-    return tokenize(s).length;
+    return tokenise(s).length;
   });
 
   onInput(e: Event) {

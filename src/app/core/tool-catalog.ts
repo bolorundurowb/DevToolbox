@@ -62,10 +62,10 @@ export const CATEGORIES: Category[] = [
       { id: 'img-convert', name: 'Image Converter', icon: 'image',   desc: 'PNG · JPG · WebP · AVIF',        catId: 'image', catName: 'Images', route: '/tools/img-converter',  keywords: ['image', 'convert', 'png', 'jpg', 'webp', 'avif', 'compress'] },
       { id: 'img-resize',  name: 'Image Resizer',   icon: 'resize',  desc: 'Batch, presets, aspect-lock',    catId: 'image', catName: 'Images', route: '/tools/img-resizer',    keywords: ['image', 'resize', 'scale', 'dimensions'] },
       { id: 'img-crop',    name: 'Image Cropper',   icon: 'crop',    desc: 'Manual + smart crop',            catId: 'image', catName: 'Images', route: '/tools/img-cropper',    keywords: ['image', 'crop', 'trim', 'cut'] },
-      { id: 'svg-opt',     name: 'SVG Optimizer',   icon: 'svg',     desc: 'Strip metadata and shrink paths', catId: 'image', catName: 'Images', route: '/tools/svg-optimizer',  keywords: ['svg', 'optimize', 'compress', 'svgo'] },
-      { id: 'svg-export',  name: 'SVG Exporter',    icon: 'svg',     desc: 'Preview SVG and export PNG/JPEG', catId: 'image', catName: 'Images', route: '/tools/svg-exporter', keywords: ['svg', 'export', 'png', 'jpeg', 'jpg', 'rasterize', 'convert'] },
-      { id: 'color',         name: 'Color Tools',              icon: 'palette', desc: 'Convert, pick, contrast',                    catId: 'image', catName: 'Images', route: '/tools/color-tools',    keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch', 'picker'] },
-      { id: 'palette-gen',  name: 'Color Palette Generator', icon: 'palette', desc: 'Tetradic, triadic, complementary, and more',     catId: 'image', catName: 'Images', route: '/tools/color-palette',  keywords: ['color', 'colour', 'palette', 'harmony', 'tetradic', 'triadic', 'complementary', 'analogous', 'monochromatic', 'split', 'tints', 'shades', 'hsl', 'generator'] },
+      { id: 'svg-opt',     name: 'SVG Optimiser',   icon: 'svg',     desc: 'Strip metadata and shrink paths', catId: 'image', catName: 'Images', route: '/tools/svg-optimizer',  keywords: ['svg', 'optimise', 'compress', 'svgo'] },
+      { id: 'svg-export',  name: 'SVG Exporter',    icon: 'svg',     desc: 'Preview SVG and export PNG/JPEG', catId: 'image', catName: 'Images', route: '/tools/svg-exporter', keywords: ['svg', 'export', 'png', 'jpeg', 'jpg', 'rasterise', 'convert'] },
+      { id: 'color',         name: 'Colour Tools',             icon: 'palette', desc: 'Convert, pick, contrast',                    catId: 'image', catName: 'Images', route: '/tools/color-tools',    keywords: ['colour', 'hex', 'rgb', 'hsl', 'oklch', 'picker'] },
+      { id: 'palette-gen',  name: 'Colour Palette Generator', icon: 'palette', desc: 'Tetradic, triadic, complementary, and more',     catId: 'image', catName: 'Images', route: '/tools/color-palette',  keywords: ['colour', 'palette', 'harmony', 'tetradic', 'triadic', 'complementary', 'analogous', 'monochromatic', 'split', 'tints', 'shades', 'hsl', 'generator'] },
     ]
   },
   {
@@ -118,13 +118,13 @@ export const TOOL_BY_ID: Record<string, Tool> = Object.fromEntries(
   ALL_TOOLS.map(t => [t.id, t])
 );
 
-export function searchTools(query: string): Tool[] {
+export function searchTools(query: string, translate: (value: string) => string = value => value): Tool[] {
   if (!query.trim()) return ALL_TOOLS;
   const q = query.toLowerCase();
   return ALL_TOOLS.filter(t =>
-    t.name.toLowerCase().includes(q) ||
-    t.desc.toLowerCase().includes(q) ||
-    t.catName.toLowerCase().includes(q) ||
-    (t.keywords || []).some(k => k.includes(q))
+    translate(t.name).toLowerCase().includes(q) ||
+    translate(t.desc).toLowerCase().includes(q) ||
+    translate(t.catName).toLowerCase().includes(q) ||
+    (t.keywords || []).some(k => k.toLowerCase().includes(q) || translate(k).toLowerCase().includes(q))
   );
 }

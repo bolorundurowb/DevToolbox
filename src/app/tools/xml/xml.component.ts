@@ -9,7 +9,7 @@ function formatXml(xml: string, indentSize: number): string {
   let result = '';
   let indent = 0;
 
-  // Normalize line endings and split on tag boundaries
+  // Normalise line endings and split on tag boundaries
   const tokens = xml
     .replace(/>\s*</g, '><')
     .replace(/>\s*/g, '>')

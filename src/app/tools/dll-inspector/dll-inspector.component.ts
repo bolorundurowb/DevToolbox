@@ -156,7 +156,7 @@ export class DllInspectorComponent {
         await this.inspect(selected);
       }
     } catch (e: any) {
-      this.error.set('Could not open file dialog: ' + (e?.message ?? String(e)));
+      this.error.set('Could not open file dialogue: ' + (e?.message ?? String(e)));
     }
   }
 

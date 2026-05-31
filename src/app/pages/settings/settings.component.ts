@@ -7,6 +7,8 @@ import { PinnedService } from '../../core/services/pinned.service';
 import { HistoryService } from '../../core/services/history.service';
 import { TopbarComponent } from '../../layout/topbar/topbar.component';
 import { SETTINGS_NAV } from '../../shared/nav';
+import { I18nService } from '../../core/i18n/i18n.service';
+import type { LocaleCode } from '../../core/i18n/i18n.types';
 
 type Section = 'General' | 'Appearance' | 'Shortcuts' | 'History' | 'Advanced';
 
@@ -78,6 +80,24 @@ const SHORTCUTS = [
             </div>
             <div style="font-size:12px;color:var(--text-muted);margin-top:8px;font-family:var(--font-ui)">
               Used in the Home greeting. Blank falls back to “Chief”.
+            </div>
+          </div>
+
+          <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+          <div style="margin-bottom:28px">
+            <h2 style="margin:0 0 14px;font-size:14px;font-weight:650;color:var(--text);font-family:var(--font-ui)">Language</h2>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+              <div>
+                <div style="font-size:13.5px;font-weight:500;color:var(--text);font-family:var(--font-ui)">Interface language</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--font-ui)">Choose the language used across Dev Core Tools</div>
+              </div>
+              <select [(ngModel)]="localeProxy" (ngModelChange)="setLocale($event)"
+                style="height:30px;padding:0 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;outline:none;font-family:var(--font-ui)">
+                @for (locale of locales; track locale.code) {
+                  <option [value]="locale.code">{{ locale.nativeLabel }}</option>
+                }
+              </select>
             </div>
           </div>
 
@@ -365,12 +385,14 @@ export class SettingsComponent {
   private svc         = inject(SettingsService);
   private pinned      = inject(PinnedService);
   private historySvc  = inject(HistoryService);
+  private i18n        = inject(I18nService);
 
   readonly nav          = SETTINGS_NAV;
   readonly accentColors = ACCENT_COLORS;
   readonly shortcutGroups = SHORTCUTS;
   readonly uiFontKeys   = Object.keys(UI_FONTS);
   readonly codeFontKeys = Object.keys(CODE_FONTS);
+  readonly locales      = this.i18n.availableLocales;
 
   readonly themes: { value: Theme; label: string; icon: string }[] = [
     { value: 'light',  label: 'Light',  icon: 'eye' },
@@ -383,6 +405,7 @@ export class SettingsComponent {
   ];
 
   readonly updateToggles: { key: string; label: string; desc: string }[] = [
+    { key: 'autoCheckUpdates', label: 'Check for updates automatically', desc: 'Periodically check for new versions and notify you' },
     { key: 'includeBeta', label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
@@ -398,6 +421,7 @@ export class SettingsComponent {
   displayNameProxy = this.svc.settings().displayName;
   uiFontProxy      = this.svc.settings().uiFont;
   codeFontProxy    = this.svc.settings().codeFont;
+  localeProxy      = this.svc.settings().locale;
 
   getBool(key: string): boolean {
     return !!(this.svc.settings() as unknown as Record<string, unknown>)[key];
@@ -417,6 +441,7 @@ export class SettingsComponent {
   setDisplayName(displayName: string): void { this.svc.update({ displayName }); }
   setUiFont(uiFont: string): void { this.svc.update({ uiFont }); }
   setCodeFont(codeFont: string): void { this.svc.update({ codeFont }); }
+  setLocale(locale: LocaleCode): void { this.svc.update({ locale }); }
 
   async useSystemName(): Promise<void> {
     await this.svc.hydrateDisplayNameFromSystem(true);

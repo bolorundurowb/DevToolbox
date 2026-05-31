@@ -8,7 +8,7 @@
 
 # Dev Core Tools
 
-[![CI](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bolorundurowb/dev-core-tools/actions/workflows/ci.yml) [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)](LICENSE)
 
 Dev Core Tools is a local-first desktop app that brings everyday developer utilities into one fast, offline workspace. It combines an Angular 21 interface with a Tauri v2 shell and Rust commands for native capabilities such as image processing, hashing, and file access.
 
@@ -45,7 +45,7 @@ The app is designed for common "paste, inspect, convert, generate" tasks without
 | Text & Code      | JSON, XML, YAML, SQL, JS/TS beautifier, Markdown preview, diff viewer, regex tester, Lorem Ipsum |
 | Encoding         | Base64, URL encoding, HTML entities, JWT decoder, hex/ASCII, string escaper, text case converter |
 | Hashing & Crypto | Hash generator, bcrypt, HMAC, AES, RSA keygen, UUIDs, password generator, cert decoder           |
-| Images           | Converter, resizer, cropper, SVG optimizer, SVG exporter, color tools, color palette             |
+| Images           | Converter, resizer, cropper, SVG optimiser, SVG exporter, colour tools, colour palette           |
 | Web & Network    | Cron parser, Unix time, QR codes, IP/CIDR, user-agent parser, cURL-to-code, OpenAPI viewer       |
 | Data Transform   | CSV↔JSON, JSON↔TOML, JSON Schema generation, datetime utilities                                  |
 | Utilities        | Unit converter, number base converter, mock data generator, string escaper                       |
@@ -148,7 +148,7 @@ Build outputs are written under `src-tauri/target/release/bundle/`.
 ```text
 Dev Core Tools/
 ├── src/                 Angular application
-│   ├── app/core/        Tool catalog, shared icons, and services
+│   ├── app/core/        Tool catalogue, shared icons, and services
 │   ├── app/layout/      Shell, sidebar, topbar, and command palette
 │   ├── app/pages/       Home, first-run, settings, and about pages
 │   └── app/tools/       Lazy-loaded tool components
@@ -161,6 +161,6 @@ Dev Core Tools/
 
 Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup expectations, coding conventions, checks to run, and guidance for adding new tools.
 
-## License
+## Licence
 
-Dev Core Tools is released under the MIT license.
+Dev Core Tools is released under the MIT licence.
