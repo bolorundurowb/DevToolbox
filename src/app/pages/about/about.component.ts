@@ -194,6 +194,7 @@ export class AboutComponent implements OnInit {
   readonly arch     = navigator.platform.includes('arm') || navigator.platform.includes('M1') ? 'Apple Silicon' : 'x64';
 
   readonly updatePrefs = [
+    { key: 'autoCheckUpdates' as const, label: 'Check for updates automatically', desc: 'Periodically check for new versions and notify you' },
     { key: 'includeBeta' as const, label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
@@ -221,11 +222,11 @@ export class AboutComponent implements OnInit {
     if (label !== 'About') this.router.navigate(['/settings']);
   }
 
-  getPref(key: 'includeBeta'): boolean {
+  getPref(key: 'autoCheckUpdates' | 'includeBeta'): boolean {
     return this.svc.settings()[key];
   }
 
-  togglePref(key: 'includeBeta'): void {
+  togglePref(key: 'autoCheckUpdates' | 'includeBeta'): void {
     this.svc.update({ [key]: !this.svc.settings()[key] } as any);
   }
 

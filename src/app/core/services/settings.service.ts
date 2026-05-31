@@ -77,6 +77,7 @@ export interface AppSettings {
   codeFont: string;
   startWithSystem: boolean;
   includeBeta: boolean;
+  autoCheckUpdates: boolean;
   sidebarWidth: number;
   trackHistory: boolean;
   maxHistory: number;
@@ -91,6 +92,7 @@ const DEFAULTS: AppSettings = {
   codeFont: 'JetBrains Mono',
   startWithSystem: false,
   includeBeta: false,
+  autoCheckUpdates: true,
   sidebarWidth: 268,
   trackHistory: true,
   maxHistory: 25,

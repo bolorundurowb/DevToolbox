@@ -405,6 +405,7 @@ export class SettingsComponent {
   ];
 
   readonly updateToggles: { key: string; label: string; desc: string }[] = [
+    { key: 'autoCheckUpdates', label: 'Check for updates automatically', desc: 'Periodically check for new versions and notify you' },
     { key: 'includeBeta', label: 'Include beta releases', desc: 'Opt in to pre-release builds' },
   ];
 
